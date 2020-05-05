@@ -1,0 +1,48 @@
+* Caddy Http Cache
+
+This is a http cache plugin for caddy 2. Major inspired by https://github.com/nicolasazrak/caddy-cache. I migrate the codebase to be consist with the caddy2 architecture and implement more feature for the cache.
+
+Currently, this is under development so it will change frequently.
+
+* How to build
+
+  In development, go to the cmd folder and type the following commands.
+
+  #+begin_src sh
+  go build -ldflags="-w -s" -o caddy
+  #+end_src
+  
+  To build linux binary by this
+  #+begin_src 
+  GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o caddy
+  #+end_src
+  
+  Or you can use the [[https://github.com/caddyserver/xcaddy][xcaddy]] to build the executable file.
+  Ensure you've install it by =go get -u github.com/caddyserver/xcaddy/cmd/xcaddy=
+  #+begin_src sh
+    xcaddy build v2.0.0 --with github.com/sillygod/cdp-cache 
+  #+end_src
+  
+  Xcaddy also provide a way to develop plugin locally.
+  #+begin_src sh
+    xcaddy run --config cmd/Caddyfile
+  #+end_src
+
+* How to run
+
+  #+begin_src sh
+    caddy run --config [caddy file] --adapter caddyfile
+  #+end_src
+
+* Deployment
+  
+In progress, currently I simply build the binary to the target platform and run it.
+
+  
+* Todo list
+  
+  - [] custom log format
+  - [] in memory cache (consider to use [[https://github.com/golang/groupcache][groupcache]])
+  - [] chache control expiration issue default will add 24 hours if no rule applied (in the cacheobject library)
+  - [] purge cache entries
+  - [] more optimization..

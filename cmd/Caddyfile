@@ -1,0 +1,36 @@
+# This is an example caddyfile
+{
+    debug
+    order http_cache before reverse_proxy
+}
+
+:4000  {
+
+    encode zstd gzip
+
+    reverse_proxy {
+
+        to localhost:8080
+        header_up Host {http.reverse_proxy.upstream.host}
+
+    }
+
+    http_cache {
+
+        match_path /
+        path /tmp/cache
+
+    }
+
+    log {
+        output stderr
+        format logfmt 
+    }
+
+    #log {
+    #    output file /var/logs/caddy/access.log
+    #    format single_field common_log
+    #}
+}
+
+
