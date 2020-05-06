@@ -1,6 +1,7 @@
 package httpcache
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"hash/crc32"
@@ -189,8 +190,17 @@ func (e *Entry) IsFresh() bool {
 	return e.expiration.After(time.Now())
 }
 
-func (e *Entry) setBackend(config *Config) error {
-	backend, err := backends.NewFileBackend(config.Path)
+func (e *Entry) setBackend(ctx context.Context, config *Config) error {
+	var backend backends.Backend
+	var err error
+	// I can give the context here?
+	switch config.Type {
+	case file:
+		backend, err = backends.NewFileBackend(config.Path)
+	case inMemory:
+		backend, err = backends.NewInMemoryBackend(ctx, config.CacheKeyTemplate)
+	}
+
 	e.Response.SetBody(backend)
 	return err
 }

@@ -17,6 +17,7 @@
 
     http_cache {
 
+        cache_type in_memory
         match_path /
         path /tmp/cache
 

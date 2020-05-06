@@ -10,6 +10,7 @@ import (
 
 	"github.com/caddyserver/caddy/v2"
 	"github.com/caddyserver/caddy/v2/modules/caddyhttp"
+	"github.com/sillygod/cdp-cache/backends"
 	"go.uber.org/zap"
 )
 
@@ -34,10 +35,10 @@ func init() {
 
 // Handler is a http handler as a middleware to cache the response
 type Handler struct {
-	Config   *Config     `json:"config,omitempty"`
-	Cache    *HTTPCache  `json:"-"`
-	URLLocks *URLLock    `json:"-"`
-	logger   *zap.Logger `json:"-"`
+	Config   *Config    `json:"config,omitempty"`
+	Cache    *HTTPCache `json:"-"`
+	URLLocks *URLLock   `json:"-"`
+	logger   *zap.Logger
 }
 
 func (h *Handler) addStatusHeaderIfConfigured(w http.ResponseWriter, status string) {
@@ -166,6 +167,12 @@ func (h *Handler) Provision(ctx caddy.Context) error {
 
 	h.Cache = NewHTTPCache(h.Config)
 	h.URLLocks = NewURLLock(h.Config)
+
+	err := backends.InitGroupCacheRes(h.Config.CacheMaxMemorySize)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -226,7 +233,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyht
 
 		// Case when response was private but now is public
 		if entry.isPublic {
-			err := entry.setBackend(h.Config)
+			err := entry.setBackend(r.Context(), h.Config)
 			if err != nil {
 				w.WriteHeader(500)
 				return err
@@ -251,7 +258,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyht
 	// Entry is always saved, even if it is not public
 	// This is to release the URL lock.
 	if entry.isPublic {
-		err := entry.setBackend(h.Config)
+		err := entry.setBackend(r.Context(), h.Config)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return err

@@ -18,30 +18,42 @@ type CacheType string
 const (
 	file     CacheType = "file"
 	redis    CacheType = "redis"
-	inMemory CacheType = "inMemory"
+	inMemory CacheType = "in_memory"
+)
+
+// BYTE represents the num of byte
+// 1MB = 2^10 BYTE
+// 1GB = 2^10 MB
+const (
+	BYTE = 1 << (iota * 10)
+	KB
+	MB
+	GB
 )
 
 var (
-	defaultStatusHeader     = "X-Cache-Status"
-	defaultLockTimeout      = time.Duration(5) * time.Minute
-	defaultMaxAge           = time.Duration(5) * time.Minute
-	defaultPath             = ""
-	defaultCacheType        = file
-	defaultcacheBucketsNum  = 256
-	defaultCacheKeyTemplate = "{http.request.method} {http.request.host}{http.request.uri.path}?{http.request.uri.query}"
+	defaultStatusHeader       = "X-Cache-Status"
+	defaultLockTimeout        = time.Duration(5) * time.Minute
+	defaultMaxAge             = time.Duration(5) * time.Minute
+	defaultPath               = ""
+	defaultCacheType          = file
+	defaultcacheBucketsNum    = 256
+	defaultCacheMaxMemorySize = GB // default is 1 GB
+	defaultCacheKeyTemplate   = "{http.request.method} {http.request.host}{http.request.uri.path}?{http.request.uri.query}"
 	// the key is refereced from github.com/caddyserver/caddy/v2/modules/caddyhttp.addHTTPVarsToReplacer
 )
 
 const (
-	keyStatusHeader    = "status_header"
-	keyLockTimeout     = "lock_timeout"
-	keyDefaultMaxAge   = "default_max_age"
-	keyPath            = "path"
-	keyMatchHeader     = "match_header"
-	keyMatchPath       = "match_path"
-	keyCacheKey        = "cache_key"
-	keyCacheBucketsNum = "cache_bucket_num"
-	keyCacheType       = "cache_type"
+	keyStatusHeader       = "status_header"
+	keyLockTimeout        = "lock_timeout"
+	keyDefaultMaxAge      = "default_max_age"
+	keyPath               = "path"
+	keyMatchHeader        = "match_header"
+	keyMatchPath          = "match_path"
+	keyCacheKey           = "cache_key"
+	keyCacheBucketsNum    = "cache_bucket_num"
+	keyCacheMaxMemorySzie = "cache_max_memory_size"
+	keyCacheType          = "cache_type"
 )
 
 func init() {
@@ -50,28 +62,30 @@ func init() {
 
 // Config is the configuration for cache process
 type Config struct {
-	Type             CacheType                `json:"type,omitempty"`
-	StatusHeader     string                   `json:"status_header,omitempty"`
-	DefaultMaxAge    time.Duration            `json:"default_max_age,omitempty"`
-	LockTimeout      time.Duration            `json:"lock_timeout,omitempty"`
-	RuleMatchersRaws []RuleMatcherRawWithType `json:"rule_matcher_raws,omitempty"`
-	RuleMatchers     []RuleMatcher            `json:"-"`
-	CacheBucketsNum  int                      `json:"cache_buckets_num,omitempty"`
-	Path             string                   `json:"path,omitempty"`
-	CacheKeyTemplate string                   `json:"cache_key_template,omitempty"`
+	Type               CacheType                `json:"type,omitempty"`
+	StatusHeader       string                   `json:"status_header,omitempty"`
+	DefaultMaxAge      time.Duration            `json:"default_max_age,omitempty"`
+	LockTimeout        time.Duration            `json:"lock_timeout,omitempty"`
+	RuleMatchersRaws   []RuleMatcherRawWithType `json:"rule_matcher_raws,omitempty"`
+	RuleMatchers       []RuleMatcher            `json:"-"`
+	CacheBucketsNum    int                      `json:"cache_buckets_num,omitempty"`
+	CacheMaxMemorySize int                      `json:"cache_max_memory_size,omitempty"`
+	Path               string                   `json:"path,omitempty"`
+	CacheKeyTemplate   string                   `json:"cache_key_template,omitempty"`
 }
 
 func getDefaultConfig() *Config {
 	return &Config{
-		StatusHeader:     defaultStatusHeader,
-		DefaultMaxAge:    defaultMaxAge,
-		LockTimeout:      defaultLockTimeout,
-		RuleMatchersRaws: []RuleMatcherRawWithType{},
-		RuleMatchers:     []RuleMatcher{},
-		CacheBucketsNum:  defaultcacheBucketsNum,
-		Path:             defaultPath,
-		Type:             defaultCacheType,
-		CacheKeyTemplate: defaultCacheKeyTemplate,
+		StatusHeader:       defaultStatusHeader,
+		DefaultMaxAge:      defaultMaxAge,
+		LockTimeout:        defaultLockTimeout,
+		RuleMatchersRaws:   []RuleMatcherRawWithType{},
+		RuleMatchers:       []RuleMatcher{},
+		CacheBucketsNum:    defaultcacheBucketsNum,
+		CacheMaxMemorySize: defaultCacheMaxMemorySize,
+		Path:               defaultPath,
+		Type:               defaultCacheType,
+		CacheKeyTemplate:   defaultCacheKeyTemplate,
 	}
 }
 

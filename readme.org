@@ -41,8 +41,9 @@ In progress, currently I simply build the binary to the target platform and run 
   
 * Todo list
   
-  - [] custom log format
-  - [] in memory cache (consider to use [[https://github.com/golang/groupcache][groupcache]])
-  - [] chache control expiration issue default will add 24 hours if no rule applied (in the cacheobject library)
-  - [] purge cache entries
-  - [] more optimization..
+  - [ ] custom log format (currently only add zap logger to print info)
+        Idealy, We can implement a custom log module.
+  - [ ] in memory cache (consider to use [[https://github.com/golang/groupcache][groupcache]])
+  - [ ] chache control expiration issue default will add 24 hours if no rule applied (in the cacheobject library)
+  - [ ] more optimization..
+  - [ ] purge cache entries
