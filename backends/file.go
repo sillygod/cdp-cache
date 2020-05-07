@@ -80,7 +80,7 @@ func (r *FileReader) Read(p []byte) (n int, err error) {
 		}
 	}
 
-	// if there is no subscription, just read 
+	// if there is no subscription, just read
 	return r.content.Read(p)
 }
 

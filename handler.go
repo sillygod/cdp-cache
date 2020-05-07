@@ -3,6 +3,8 @@ package httpcache
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"runtime/debug"
 
 	"net/http"
 
@@ -58,14 +60,19 @@ func (h *Handler) respond(w http.ResponseWriter, entry *Entry, cacheStatus strin
 	copyHeaders(entry.Response.snapHeader, w.Header())
 	// w.WriteHeader(entry.Response.Code)
 	err := entry.WriteBodyTo(w)
+	if err != nil {
+		debug.PrintStack()
+		fmt.Printf("shit %v", err)
+	}
 	return err
 }
 
 func popOrNil(h *Handler, errChan chan error) (err error) {
-	// TODO: check this
 	select {
 	case err := <-errChan:
-		h.logger.Error(err.Error())
+		if err != nil {
+			h.logger.Error(err.Error())
+		}
 	default:
 	}
 	return
@@ -111,7 +118,7 @@ func (h *Handler) fetchUpstream(req *http.Request, next caddyhttp.Handler) (*Ent
 		// It is required to wait the body to prevent closing the response
 		// before the body was set. If that happens the body will
 		// stay locked waiting the response to be closed
-		response.WaitBody()
+
 		response.Close()
 	}(req, response)
 
@@ -186,15 +193,29 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyht
 
 	// add a log here to record the elapsed time (from receiving the request to send the reponse)
 	start := time.Now()
+	upstreamDuration := time.Duration(0)
 
-	defer func(h *Handler, t time.Time) {
-		duration := time.Since(t)
-		h.logger.Info("cache handler",
-			zap.String("host", r.Host), // find a way to get upstream
-			zap.String("method", r.Method),
-			zap.String("uri", r.RequestURI),
-			zap.Duration("duration", duration))
-	}(h, start)
+	// TODO: think a proper way to log these info
+	defer func(h *Handler, t time.Time, upstreamDuration time.Duration) {
+
+		if upstreamDuration == 0 {
+			duration := time.Since(t)
+			h.logger.Info("cache handler",
+				zap.String("host", r.Host), // find a way to get upstream
+				zap.String("method", r.Method),
+				zap.String("uri", r.RequestURI),
+				zap.Duration("request time", duration))
+		} else {
+			duration := time.Since(t)
+			h.logger.Info("cache handler",
+				zap.String("host", r.Host), // find a way to get upstream
+				zap.String("method", r.Method),
+				zap.String("uri", r.RequestURI),
+				zap.Duration("request time", duration),
+				zap.Duration("upstream request time", upstreamDuration))
+		}
+
+	}(h, start, upstreamDuration)
 
 	if !shouldUseCache(r) {
 		h.addStatusHeaderIfConfigured(w, cacheBypass)
@@ -225,7 +246,9 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyht
 	// It should be fetched from upstream and check the new headers
 	// To check if the new response changes to public
 	if exists && !previousEntry.isPublic {
+		t := time.Now()
 		entry, err := h.fetchUpstream(r, next)
+		upstreamDuration = time.Since(t)
 		if err != nil {
 			w.WriteHeader(entry.Response.Code)
 			return err
@@ -233,7 +256,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyht
 
 		// Case when response was private but now is public
 		if entry.isPublic {
-			err := entry.setBackend(r.Context(), h.Config)
+			err := entry.setBackend(r.Context(), h.Config, key)
 			if err != nil {
 				w.WriteHeader(500)
 				return err
@@ -249,7 +272,9 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyht
 	// Third case: CACHE MISS
 	// The response is not in cache
 	// It should be fetched from upstream and save it in cache
+	t := time.Now()
 	entry, err := h.fetchUpstream(r, next)
+	upstreamDuration = time.Since(t)
 	if err != nil {
 		w.WriteHeader(entry.Response.Code)
 		return err
@@ -258,7 +283,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyht
 	// Entry is always saved, even if it is not public
 	// This is to release the URL lock.
 	if entry.isPublic {
-		err := entry.setBackend(r.Context(), h.Config)
+		err := entry.setBackend(r.Context(), h.Config, key)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return err

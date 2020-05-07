@@ -1,6 +1,6 @@
 # This is an example caddyfile
 {
-    debug
+    # debug
     order http_cache before reverse_proxy
 }
 

@@ -157,7 +157,7 @@ func (e *Entry) Clean() error {
 }
 
 func (e *Entry) writePublicResponse(w http.ResponseWriter) error {
-	reader, err := e.Response.body.GetReader()
+	reader, err := e.Response.GetReader()
 
 	if err != nil {
 		return err
@@ -190,7 +190,7 @@ func (e *Entry) IsFresh() bool {
 	return e.expiration.After(time.Now())
 }
 
-func (e *Entry) setBackend(ctx context.Context, config *Config) error {
+func (e *Entry) setBackend(ctx context.Context, config *Config, key string) error {
 	var backend backends.Backend
 	var err error
 	// I can give the context here?
@@ -198,7 +198,7 @@ func (e *Entry) setBackend(ctx context.Context, config *Config) error {
 	case file:
 		backend, err = backends.NewFileBackend(config.Path)
 	case inMemory:
-		backend, err = backends.NewInMemoryBackend(ctx, config.CacheKeyTemplate)
+		backend, err = backends.NewInMemoryBackend(ctx, key)
 	}
 
 	e.Response.SetBody(backend)

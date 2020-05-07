@@ -23,13 +23,13 @@ var (
 	l         sync.Mutex
 )
 
-// InMemoryBackend saves the content into inmemory with
-// groupcache.
+// InMemoryBackend saves the content into inmemory with the groupcache.
 type InMemoryBackend struct {
-	Group            *groupcache.Group
-	Ctx              context.Context
-	CacheKeyTemplate string
-	cachedBytes      []byte
+	Group       *groupcache.Group
+	Ctx         context.Context
+	Key         string
+	content     bytes.Buffer
+	cachedBytes []byte
 }
 
 // InitGroupCacheRes init the resources for groupcache
@@ -66,18 +66,18 @@ func getter(ctx context.Context, key string, dest groupcache.Sink) error {
 }
 
 // NewInMemoryBackend get the singleton of groupcache
-func NewInMemoryBackend(ctx context.Context, cacheKeyTemplate string) (Backend, error) {
+func NewInMemoryBackend(ctx context.Context, key string) (Backend, error) {
 	return &InMemoryBackend{
-		Ctx:              ctx,
-		Group:            groupch,
-		CacheKeyTemplate: cacheKeyTemplate,
+		Ctx:   ctx,
+		Group: groupch,
+		Key:   key,
 	}, nil
 }
 
+// Write adds the response content in the context for the groupcache's
+// setter function.
 func (i *InMemoryBackend) Write(p []byte) (n int, err error) {
-	i.Ctx = context.WithValue(i.Ctx, getterCtxKey, p)
-	err = i.Group.Get(i.Ctx, i.CacheKeyTemplate, groupcache.AllocatingByteSliceSink(&i.cachedBytes))
-	return len(i.cachedBytes), err
+	return i.content.Write(p)
 }
 
 func (i *InMemoryBackend) Flush() error {
@@ -89,10 +89,19 @@ func (i *InMemoryBackend) Clean() error {
 }
 
 func (i *InMemoryBackend) Close() error {
-	return nil
+	i.Ctx = context.WithValue(i.Ctx, getterCtxKey, i.content.Bytes())
+	err := i.Group.Get(i.Ctx, i.Key, groupcache.AllocatingByteSliceSink(&i.cachedBytes))
+	return err
 }
 
 func (i *InMemoryBackend) GetReader() (io.ReadCloser, error) {
-	rdr := ioutil.NopCloser(bytes.NewReader(i.cachedBytes))
-	return rdr, nil
+	if len(i.cachedBytes) == 0 {
+		err := i.Group.Get(i.Ctx, i.Key, groupcache.AllocatingByteSliceSink(&i.cachedBytes))
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	rc := ioutil.NopCloser(bytes.NewReader(i.cachedBytes))
+	return rc, nil
 }

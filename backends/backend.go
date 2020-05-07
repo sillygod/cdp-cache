@@ -1,9 +1,9 @@
 package backends
 
 import (
+	"errors"
 	"io"
 	"net/http"
-	"errors"
 )
 
 // Backend is the cache storage backend.

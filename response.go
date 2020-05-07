@@ -2,9 +2,9 @@ package httpcache
 
 import (
 	"errors"
+	"io"
 	"net/http"
 	"strings"
-	"sync"
 
 	"github.com/sillygod/cdp-cache/backends"
 )
@@ -19,48 +19,38 @@ func copyHeaders(from http.Header, to http.Header) {
 	}
 }
 
-// NewResponse returns an initialized Response.
+// Response encapsulates the entry
 type Response struct {
 	Code       int
 	HeaderMap  http.Header
 	body       backends.Backend
 	snapHeader http.Header
 
-	wroteHeader   bool
-	firstByteSent bool
+	wroteHeader  bool
+	bodyComplete bool
 
-	bodyLock    *sync.RWMutex
-	closedLock  *sync.RWMutex
-	headersLock *sync.RWMutex
-
-	closeNotify chan bool
+	bodyChan         chan struct{}
+	bodyCompleteChan chan struct{}
+	closedChan       chan struct{}
+	headersChan      chan struct{}
 }
 
 // NewResponse returns an initialized Response.
 func NewResponse() *Response {
 	r := &Response{
-		Code:        200,
-		HeaderMap:   http.Header{},
-		body:        nil,
-		closeNotify: make(chan bool, 1),
-		bodyLock:    new(sync.RWMutex),
-		closedLock:  new(sync.RWMutex),
-		headersLock: new(sync.RWMutex),
+		Code:             200,
+		HeaderMap:        http.Header{},
+		body:             nil,
+		bodyChan:         make(chan struct{}, 1),
+		closedChan:       make(chan struct{}, 1),
+		headersChan:      make(chan struct{}, 1),
+		bodyCompleteChan: make(chan struct{}, 1),
 	}
-
-	r.bodyLock.Lock()
-	r.closedLock.Lock()
-	r.headersLock.Lock()
-
 	return r
 }
 
 func (r *Response) Header() http.Header {
 	return r.HeaderMap
-}
-
-func (r *Response) CloseNotify() <-chan bool {
-	return r.closeNotify
 }
 
 func (r *Response) writeHeader(b []byte, str string) {
@@ -92,13 +82,14 @@ func (r *Response) writeHeader(b []byte, str string) {
 }
 
 func (r *Response) Write(buf []byte) (int, error) {
+
+	// debug.PrintStack()
 	if !r.wroteHeader {
 		r.writeHeader(buf, "")
 	}
 
-	if !r.firstByteSent {
-		r.firstByteSent = true
-		r.WaitBody()
+	if r.body == nil {
+		<-r.bodyChan
 	}
 
 	if r.body != nil {
@@ -109,20 +100,23 @@ func (r *Response) Write(buf []byte) (int, error) {
 }
 
 func (r *Response) WaitClose() {
-	r.closedLock.RLock()
+	<-r.closedChan
 }
 
-func (r *Response) WaitBody() {
-	r.bodyLock.RLock()
+func (r *Response) GetReader() (io.ReadCloser, error) {
+	if r.bodyComplete == false {
+		<-r.bodyCompleteChan
+	}
+	return r.body.GetReader()
 }
 
 func (r *Response) SetBody(body backends.Backend) {
 	r.body = body
-	r.bodyLock.Unlock()
+	r.bodyChan <- struct{}{}
 }
 
 func (r *Response) WaitHeaders() {
-	r.headersLock.RLock()
+	<-r.headersChan
 }
 
 func (r *Response) WriteHeader(code int) {
@@ -136,7 +130,7 @@ func (r *Response) WriteHeader(code int) {
 	r.snapHeader = http.Header{}
 	copyHeaders(r.Header(), r.snapHeader)
 	r.snapHeader.Del("server")
-	r.headersLock.Unlock()
+	r.headersChan <- struct{}{}
 }
 
 func shouldUseCache(req *http.Request) bool {
@@ -195,7 +189,12 @@ func (r *Response) Flush() {
 }
 
 func (r *Response) Close() error {
-	defer r.closedLock.Unlock()
+
+	defer func() {
+		r.bodyComplete = true
+		r.bodyCompleteChan <- struct{}{}
+		r.closedChan <- struct{}{}
+	}()
 
 	if r.body != nil {
 		return r.body.Close()
@@ -205,8 +204,6 @@ func (r *Response) Close() error {
 
 // Clean the body if it is set
 func (r *Response) Clean() error {
-	r.bodyLock.RLock()
-	defer r.bodyLock.RUnlock()
 
 	if r.body == nil {
 		return nil
