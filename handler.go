@@ -5,10 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"runtime/debug"
+	"time"
 
 	"net/http"
-
-	"time"
 
 	"github.com/caddyserver/caddy/v2"
 	"github.com/caddyserver/caddy/v2/modules/caddyhttp"
@@ -44,12 +43,6 @@ type Handler struct {
 }
 
 func (h *Handler) addStatusHeaderIfConfigured(w http.ResponseWriter, status string) {
-	// TODO: check this part
-	// NOTE: in the module header, there are some relavant code.
-	// if rec, ok := w.(*httpserver.ResponseRecorder); ok {
-	// 	rec.Replacer.Set("cache_status", status)
-	// }
-
 	if h.Config.StatusHeader != "" {
 		w.Header().Add(h.Config.StatusHeader, status)
 	}
@@ -62,7 +55,7 @@ func (h *Handler) respond(w http.ResponseWriter, entry *Entry, cacheStatus strin
 	err := entry.WriteBodyTo(w)
 	if err != nil {
 		debug.PrintStack()
-		fmt.Printf("shit %v", err)
+		fmt.Printf("respond err: %v", err)
 	}
 	return err
 }
@@ -108,18 +101,8 @@ func (h *Handler) fetchUpstream(req *http.Request, next caddyhttp.Handler) (*Ent
 
 		upstreamError := next.ServeHTTP(response, updatedReq)
 		errChan <- upstreamError
-
-		// If status code was not set, this will not replace it
-		// It will only ensure status code IS send
-		// response.WriteHeader(response.Code) will be called in the ServeHTTP
-
-		// Wait the response body to be set.
-		// If it is private it will be the original http.ResponseWriter
-		// It is required to wait the body to prevent closing the response
-		// before the body was set. If that happens the body will
-		// stay locked waiting the response to be closed
-
 		response.Close()
+
 	}(req, response)
 
 	// Wait headers to be sent
@@ -196,7 +179,8 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyht
 	upstreamDuration := time.Duration(0)
 
 	// TODO: think a proper way to log these info
-	defer func(h *Handler, t time.Time, upstreamDuration time.Duration) {
+	// research why can not write the log into files.
+	defer func(h *Handler, t time.Time) {
 
 		if upstreamDuration == 0 {
 			duration := time.Since(t)
@@ -215,20 +199,19 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyht
 				zap.Duration("upstream request time", upstreamDuration))
 		}
 
-	}(h, start, upstreamDuration)
+	}(h, start)
 
 	if !shouldUseCache(r) {
 		h.addStatusHeaderIfConfigured(w, cacheBypass)
 		return next.ServeHTTP(w, r)
 	}
 
-	// TODO: consider to remove this lock
 	key := getKey(h.Config.CacheKeyTemplate, r)
 	lock := h.URLLocks.Adquire(key)
 	defer lock.Unlock()
 
 	// Lookup correct entry
-	previousEntry, exists := h.Cache.Get(r)
+	previousEntry, exists := h.Cache.Get(key, r)
 
 	// First case: CACHE HIT
 	// The response exists in cache and is public
@@ -245,53 +228,33 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyht
 	// It should NOT be served from cache
 	// It should be fetched from upstream and check the new headers
 	// To check if the new response changes to public
-	if exists && !previousEntry.isPublic {
-		t := time.Now()
-		entry, err := h.fetchUpstream(r, next)
-		upstreamDuration = time.Since(t)
-		if err != nil {
-			w.WriteHeader(entry.Response.Code)
-			return err
-		}
-
-		// Case when response was private but now is public
-		if entry.isPublic {
-			err := entry.setBackend(r.Context(), h.Config, key)
-			if err != nil {
-				w.WriteHeader(500)
-				return err
-			}
-
-			h.Cache.Put(r, entry)
-			return h.respond(w, entry, cacheMiss)
-		}
-
-		return h.respond(w, entry, cacheSkip)
-	}
 
 	// Third case: CACHE MISS
 	// The response is not in cache
 	// It should be fetched from upstream and save it in cache
+
 	t := time.Now()
 	entry, err := h.fetchUpstream(r, next)
 	upstreamDuration = time.Since(t)
+
 	if err != nil {
 		w.WriteHeader(entry.Response.Code)
 		return err
 	}
 
-	// Entry is always saved, even if it is not public
-	// This is to release the URL lock.
+	// Case when response was private but now is public
 	if entry.isPublic {
 		err := entry.setBackend(r.Context(), h.Config, key)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
+			w.WriteHeader(500)
 			return err
 		}
+
+		h.Cache.Put(r, entry)
+		return h.respond(w, entry, cacheMiss)
 	}
 
-	h.Cache.Put(r, entry)
-	return h.respond(w, entry, cacheMiss)
+	return h.respond(w, entry, cacheSkip)
 
 }
 

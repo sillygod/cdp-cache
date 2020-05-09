@@ -25,7 +25,6 @@ var (
 
 // InMemoryBackend saves the content into inmemory with the groupcache.
 type InMemoryBackend struct {
-	Group       *groupcache.Group
 	Ctx         context.Context
 	Key         string
 	content     bytes.Buffer
@@ -68,9 +67,8 @@ func getter(ctx context.Context, key string, dest groupcache.Sink) error {
 // NewInMemoryBackend get the singleton of groupcache
 func NewInMemoryBackend(ctx context.Context, key string) (Backend, error) {
 	return &InMemoryBackend{
-		Ctx:   ctx,
-		Group: groupch,
-		Key:   key,
+		Ctx: ctx,
+		Key: key,
 	}, nil
 }
 
@@ -85,18 +83,19 @@ func (i *InMemoryBackend) Flush() error {
 }
 
 func (i *InMemoryBackend) Clean() error {
+	// TODO: implement del the cache
 	return nil
 }
 
 func (i *InMemoryBackend) Close() error {
 	i.Ctx = context.WithValue(i.Ctx, getterCtxKey, i.content.Bytes())
-	err := i.Group.Get(i.Ctx, i.Key, groupcache.AllocatingByteSliceSink(&i.cachedBytes))
+	err := groupch.Get(i.Ctx, i.Key, groupcache.AllocatingByteSliceSink(&i.cachedBytes))
 	return err
 }
 
 func (i *InMemoryBackend) GetReader() (io.ReadCloser, error) {
 	if len(i.cachedBytes) == 0 {
-		err := i.Group.Get(i.Ctx, i.Key, groupcache.AllocatingByteSliceSink(&i.cachedBytes))
+		err := groupch.Get(i.Ctx, i.Key, groupcache.AllocatingByteSliceSink(&i.cachedBytes))
 		if err != nil {
 			return nil, err
 		}

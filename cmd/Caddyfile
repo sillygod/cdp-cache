@@ -6,7 +6,7 @@
 
 :4000  {
 
-    encode zstd gzip
+    # encode zstd gzip
 
     reverse_proxy {
 
@@ -24,8 +24,9 @@
     }
 
     log {
-        output stderr
+        output file /tmp/logs/caddy/access.log
         format logfmt 
+        level debug
     }
 
     #log {

@@ -188,6 +188,8 @@ func (r *Response) Flush() {
 	r.body.Flush()
 }
 
+// Close indicate the data is completely written to the body
+// so that we can close it.
 func (r *Response) Close() error {
 
 	defer func() {
@@ -202,7 +204,7 @@ func (r *Response) Close() error {
 	return nil
 }
 
-// Clean the body if it is set
+// Clean performs purge the cache
 func (r *Response) Clean() error {
 
 	if r.body == nil {

@@ -23,6 +23,7 @@ import (
 // 3. used
 // 4. cleaned up
 
+// RuleMatcherType specifies the type of matching rule to cache.
 type RuleMatcherType string
 
 const (
@@ -148,10 +149,12 @@ func NewEntry(key string, request *http.Request, response *Response, config *Con
 	}
 }
 
+// Key return the key for the entry
 func (e *Entry) Key() string {
 	return e.key
 }
 
+// Clean purges the cache
 func (e *Entry) Clean() error {
 	return e.Response.Clean()
 }
@@ -186,6 +189,7 @@ func (e *Entry) WriteBodyTo(w http.ResponseWriter) error {
 	return e.writePublicResponse(w)
 }
 
+// IsFresh indicates this entry is not expired
 func (e *Entry) IsFresh() bool {
 	return e.expiration.After(time.Now())
 }
@@ -232,8 +236,6 @@ func NewHTTPCache(config *Config) *HTTPCache {
 
 }
 
-// this will conflict so I think that's why the corresponding
-// value is an array. Maybe, there is a more efficient way.
 func (h *HTTPCache) getBucketIndexForKey(key string) uint32 {
 	return uint32(math.Mod(float64(crc32.ChecksumIEEE([]byte(key))), float64(h.cacheBucketsNum)))
 }
@@ -245,8 +247,7 @@ func getKey(cacheKeyTemplate string, r *http.Request) string {
 }
 
 // Get returns the cached response
-func (h *HTTPCache) Get(request *http.Request) (*Entry, bool) {
-	key := getKey(h.cacheKeyTemplate, request)
+func (h *HTTPCache) Get(key string, request *http.Request) (*Entry, bool) {
 	b := h.getBucketIndexForKey(key)
 	h.entriesLock[b].RLock()
 	defer h.entriesLock[b].RUnlock()
@@ -266,6 +267,7 @@ func (h *HTTPCache) Get(request *http.Request) (*Entry, bool) {
 	return nil, false
 }
 
+// Put adds the entry in the cache
 func (h *HTTPCache) Put(request *http.Request, entry *Entry) {
 	key := entry.Key()
 	bucket := h.getBucketIndexForKey(key)

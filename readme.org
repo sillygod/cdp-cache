@@ -1,6 +1,6 @@
 * Caddy Http Cache
 
-This is a http cache plugin for caddy 2. Major inspired by https://github.com/nicolasazrak/caddy-cache. I migrate the codebase to be consist with the caddy2 architecture and implement more feature for the cache.
+This is a http cache plugin for caddy 2. Major inspired by https://github.com/nicolasazrak/caddy-cache. I migrate the codebase to be consist with the caddy2 architecture and implement more feature for it.
 
 Currently, this is under development so it will change frequently.
 
