@@ -184,14 +184,14 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyht
 
 		if upstreamDuration == 0 {
 			duration := time.Since(t)
-			h.logger.Info("cache handler",
+			h.logger.Debug("cache handler",
 				zap.String("host", r.Host), // find a way to get upstream
 				zap.String("method", r.Method),
 				zap.String("uri", r.RequestURI),
 				zap.Duration("request time", duration))
 		} else {
 			duration := time.Since(t)
-			h.logger.Info("cache handler",
+			h.logger.Debug("cache handler",
 				zap.String("host", r.Host), // find a way to get upstream
 				zap.String("method", r.Method),
 				zap.String("uri", r.RequestURI),

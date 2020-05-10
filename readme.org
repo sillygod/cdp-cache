@@ -1,15 +1,15 @@
 * Caddy Http Cache
 
-This is a http cache plugin for caddy 2. Major inspired by https://github.com/nicolasazrak/caddy-cache. I migrate the codebase to be consist with the caddy2 architecture and implement more feature for it.
+  This is a http cache plugin for caddy 2. In fact, I am not familiar with the mechanism of the cdn cache so I borrow the code from https://github.com/nicolasazrak/caddy-cache. which is the caddy v1's cache module. Then, I migrate the codebase to be consist with the caddy2 architecture, do some change, and implement more feature for it.
 
-Currently, this is under development so it will change frequently.
+  Currently, this is under development so it will change frequently.
 
 * How to build
 
   In development, go to the cmd folder and type the following commands.
 
   #+begin_src sh
-  go build -ldflags="-w -s" -o caddy
+    go build -ldflags="-w -s" -o caddy
   #+end_src
   
   To build linux binary by this
@@ -34,16 +34,65 @@ Currently, this is under development so it will change frequently.
     caddy run --config [caddy file] --adapter caddyfile
   #+end_src
 
+
+* Configuration
+  
+  The following will list current support configs in the caddyfile.
+
+** status_header
+   The header to set cache status. default value: =X-Cache-Status=
+
+** match_path
+   Only the request's path match the condition will be cached. Ex. =/= means all request need to be cached because all request's path must start with =/=
+
+** default_max_age
+   The cache's expiration time.
+
+** match_header
+   only the req's header match the condtions 
+
+** path
+   The position where to save the file. Only applied when the =cache_type= is =file=.
+
+** cache_key
+   The key of cache entry. The default value is ={http.request.method} {http.request.host}{http.request.uri.path}?{http.request.uri.query}=
+
+** cache_bucket_num
+   The bucket number of the mod of cache_key's checksum. The default value is 256.
+
+** cache_type
+   Indicate to use which kind of cache's storage backend. Currently, there are two choices. One is =file= and the other is =in_memory=
+   
+** cache_max_memory_size
+   The max memory usage for in_memory backend.
+
 * Deployment
   
-In progress, currently I simply build the binary to the target platform and run it.
+  In progress, currently I simply build the binary to the target platform and run it.
+
+
+* Benchmarks
+  
+  Now, I just simply compares the performance between in-memory and disk.
+  
+** Env
+   Caddy run with the config file under directory =benchmark= and tests were run on the mac book pro (1.4 GHz Intel Core i5, 16 GB 2133 MHz LPDDR3)
+
+** Test Result
+
+  The following benchmark is analysized by =wrk -c 200 -d 30s --latency -t 4 http://localhost:9992/test.jpg=
+  the file size is 100KB
+  
+  |                         | req/s | latency (50% 90% 99%)        |
+  | proxy + file cache      | 10233 | 18.24ms /  22.56ms / 33.34ms |
+  | proxy + in memory cache | 15810 | 12.55ms /  14.09ms / 22.88ms |
 
   
 * Todo list
   
   - [x] in memory cache (consider to use [[https://github.com/golang/groupcache][groupcache]])
   - [ ] custom log format (currently only add zap logger to print info)
-        Idealy, We can implement a custom log module.
+    Idealy, We can implement a custom log module.
   - [ ] chache control expiration issue default will add 24 hours if no rule applied (in the cacheobject library)
   - [ ] more optimization..
   - [ ] purge cache entries
