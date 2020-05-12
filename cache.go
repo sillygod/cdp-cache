@@ -26,6 +26,8 @@ import (
 // RuleMatcherType specifies the type of matching rule to cache.
 type RuleMatcherType string
 
+// the following list the different way to decide the request
+// whether is matched or not to be cached it's response.
 const (
 	MatcherTypePath   RuleMatcherType = "path"
 	MatcherTypeHeader RuleMatcherType = "header"
@@ -67,6 +69,133 @@ func (h *HeaderRuleMatcher) matches(req *http.Request, statusCode int, resHeader
 	return false
 }
 
+func expirationObject(obj *cacheobject.Object, rv *cacheobject.ObjectResults) {
+	/**
+	 * Okay, lets calculate Freshness/Expiration now. woo:
+	 *  http://tools.ietf.org/html/rfc7234#section-4.2
+	 */
+
+	/*
+	   o  If the cache is shared and the s-maxage response directive
+	      (Section 5.2.2.9) is present, use its value, or
+
+	   o  If the max-age response directive (Section 5.2.2.8) is present,
+	      use its value, or
+
+	   o  If the Expires response header field (Section 5.3) is present, use
+	      its value minus the value of the Date response header field, or
+
+	   o  Otherwise, no explicit expiration time is present in the response.
+	      A heuristic freshness lifetime might be applicable; see
+	      Section 4.2.2.
+	*/
+
+	var expiresTime time.Time
+
+	if obj.RespDirectives.SMaxAge != -1 && !obj.CacheIsPrivate {
+		expiresTime = obj.NowUTC.Add(time.Second * time.Duration(obj.RespDirectives.SMaxAge))
+	} else if obj.RespDirectives.MaxAge != -1 {
+		expiresTime = obj.NowUTC.UTC().Add(time.Second * time.Duration(obj.RespDirectives.MaxAge))
+	} else if !obj.RespExpiresHeader.IsZero() {
+		serverDate := obj.RespDateHeader
+		if serverDate.IsZero() {
+			// common enough case when a Date: header has not yet been added to an
+			// active response.
+			serverDate = obj.NowUTC
+		}
+		expiresTime = obj.NowUTC.Add(obj.RespExpiresHeader.Sub(serverDate))
+	} else {
+		expiresTime = obj.NowUTC
+	}
+
+	rv.OutExpirationTime = expiresTime
+}
+
+func judgeResponseShouldCacheOrNot(req *http.Request,
+	statusCode int,
+	respHeaders http.Header,
+	privateCache bool) ([]cacheobject.Reason, time.Time, []cacheobject.Warning, *cacheobject.Object, error) {
+
+
+	var reqHeaders http.Header
+	var reqMethod string
+
+	var reqDir *cacheobject.RequestCacheDirectives = nil
+	respDir, err := cacheobject.ParseResponseCacheControl(respHeaders.Get("Cache-Control"))
+	if err != nil {
+		return nil, time.Time{}, nil, nil, err
+	}
+
+	if req != nil {
+		reqDir, err = cacheobject.ParseRequestCacheControl(req.Header.Get("Cache-Control"))
+		if err != nil {
+			return nil, time.Time{}, nil, nil, err
+		}
+		reqHeaders = req.Header
+		reqMethod = req.Method
+	}
+
+	var expiresHeader time.Time
+	var dateHeader time.Time
+	var lastModifiedHeader time.Time
+
+	if respHeaders.Get("Expires") != "" {
+		expiresHeader, err = http.ParseTime(respHeaders.Get("Expires"))
+		if err != nil {
+			// sometimes servers will return `Expires: 0` or `Expires: -1` to
+			// indicate expired content
+			expiresHeader = time.Time{}
+		}
+		expiresHeader = expiresHeader.UTC()
+	}
+
+	if respHeaders.Get("Date") != "" {
+		dateHeader, err = http.ParseTime(respHeaders.Get("Date"))
+		if err != nil {
+			return nil, time.Time{}, nil, nil, err
+		}
+		dateHeader = dateHeader.UTC()
+	}
+
+	if respHeaders.Get("Last-Modified") != "" {
+		lastModifiedHeader, err = http.ParseTime(respHeaders.Get("Last-Modified"))
+		if err != nil {
+			return nil, time.Time{}, nil, nil, err
+		}
+		lastModifiedHeader = lastModifiedHeader.UTC()
+	}
+
+	obj := cacheobject.Object{
+		CacheIsPrivate: privateCache,
+
+		RespDirectives:         respDir,
+		RespHeaders:            respHeaders,
+		RespStatusCode:         statusCode,
+		RespExpiresHeader:      expiresHeader,
+		RespDateHeader:         dateHeader,
+		RespLastModifiedHeader: lastModifiedHeader,
+
+		ReqDirectives: reqDir,
+		ReqHeaders:    reqHeaders,
+		ReqMethod:     reqMethod,
+
+		NowUTC: time.Now().UTC(),
+	}
+	rv := cacheobject.ObjectResults{}
+
+	cacheobject.CachableObject(&obj, &rv)
+	if rv.OutErr != nil {
+		return nil, time.Time{}, nil, nil, rv.OutErr
+	}
+
+	expirationObject(&obj, &rv)
+	if rv.OutErr != nil {
+		return nil, time.Time{}, nil, nil, rv.OutErr
+	}
+
+	return rv.OutReasons, rv.OutExpirationTime, rv.OutWarnings, &obj, nil
+}
+
 func getCacheStatus(req *http.Request, response *Response, config *Config) (bool, time.Time) {
 	// TODO: what does the lock time do, add more rule
 	if response.Code == http.StatusPartialContent || response.snapHeader.Get("Content-Range") != "" {
@@ -79,7 +208,7 @@ func getCacheStatus(req *http.Request, response *Response, config *Config) (bool
 
 	// TODO: the expiration here.. is weird
 	// implement my own cache expire rule
-	reasonsNotToCache, expiration, err := cacheobject.UsingRequestResponse(req, response.Code, response.snapHeader, false)
+	reasonsNotToCache, expiration, _, _, err := judgeResponseShouldCacheOrNot(req, response.Code, response.snapHeader, false)
 	if err != nil {
 		return false, time.Time{}
 	}
