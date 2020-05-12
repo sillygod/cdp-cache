@@ -28,11 +28,7 @@ jobs:
       - name: checkt out 
         uses: actions/checkout@v2
 
-      - name: download deps
-        run: |
-          go mod download
-
-      # Runs a single command using the runners shell
+      # Runs test
       - name: run test
         run: |
           go test ./...
@@ -47,3 +43,26 @@ jobs:
         with:
           name: binary
           path: ./binarys.zip
+
+      - name: docker build
+        uses: docker/build-action@v1
+        with:
+          repository: sillygod/cdp-cache
+          tags: latest
+
+      - name: docker login
+        uses: docker/login-action@v1
+        with:
+          registry: docker.pkg.github.com
+          username: sillygod
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: docker push
+        uses: docker/push-action@v1
+        with:
+          registry: docker.pkg.github.com
+          tags: latest
+
+
+
+
