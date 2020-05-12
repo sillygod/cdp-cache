@@ -1,0 +1,40 @@
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+
+name: create release
+
+jobs:
+  build:
+    name: build assets and make release
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: build
+        run: |
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o caddy cmd/main.go
+          zip linux-binary caddy
+      - name: create release
+        id: create_release
+        uses: actions/create-lease@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+      - name: upload release assets
+        id: upload_release_assets
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./linux-binary.zip
+          asset_name: linux-binary.zip
+          asset_content_type: application/zip
