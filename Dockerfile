@@ -6,7 +6,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o caddy cmd
 
 FROM alpine:3.11.6
 COPY --from=builder /app/caddy /app/caddy
-CMD ["./caddy" "run", "--config", "Caddyfile"]
+CMD ["./app/caddy", "run", "--config", "/app/Caddyfile"]
 
 HEALTHCHECK --interval=5s --timeout=10s --start-period=5s \
   CMD curl -fs http://localhost:$PORT/health || exit 1

@@ -30,10 +30,15 @@
 
 * How to run
 
+  You can directly run with the binary.
   #+begin_src sh
     caddy run --config [caddy file] --adapter caddyfile
   #+end_src
-
+  
+  Or if you are preferred to use the docker 
+  #+begin_src sh
+    docker run -it -p80:80 -p443:443 -v [the path of caddyfile]:/app/Caddyfile docker.pkg.github.com/sillygod/cdp-cache/caddy:latest
+  #+end_src
 
 * Configuration
   
@@ -68,7 +73,7 @@
 
 * Deployment
   
-  In progress, currently I simply build the binary to the target platform and run it.
+  In progress, currently I add github action to auto build the executable for linux platform and also the docker images.
 
 
 * Benchmarks
@@ -94,5 +99,6 @@
   - [X] chache control expiration issue default will add 24 hours if no rule applied (in the cacheobject library)
   - [ ] custom log format (currently only add zap logger to print info)
     Idealy, We can implement a custom log module.
+  - [ ] research about usagepool in the caddy2
   - [ ] more optimization..
   - [ ] purge cache entries
