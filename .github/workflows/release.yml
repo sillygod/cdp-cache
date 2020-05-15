@@ -52,4 +52,4 @@ jobs:
           repository: sillygod/cdp-cache/caddy
           username: sillygod
           password: ${{ secrets.GITHUB_TOKEN }}
-          tags: ${{ github.ref }}
+          tag_with_ref: true

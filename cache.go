@@ -23,6 +23,12 @@ import (
 // 3. used
 // 4. cleaned up
 
+var (
+	entries     []map[string][]*Entry
+	entriesLock []*sync.RWMutex
+	l           sync.Mutex
+)
+
 // RuleMatcherType specifies the type of matching rule to cache.
 type RuleMatcherType string
 
@@ -115,7 +121,6 @@ func judgeResponseShouldCacheOrNot(req *http.Request,
 	statusCode int,
 	respHeaders http.Header,
 	privateCache bool) ([]cacheobject.Reason, time.Time, []cacheobject.Warning, *cacheobject.Object, error) {
-
 
 	var reqHeaders http.Header
 	var reqMethod string
@@ -346,13 +351,22 @@ type HTTPCache struct {
 
 // NewHTTPCache new a HTTPCache to hanle cache entries
 func NewHTTPCache(config *Config) *HTTPCache {
-	// TODO: think how to apply UsagePool
-	entries := make([]map[string][]*Entry, config.CacheBucketsNum)
-	entriesLock := make([]*sync.RWMutex, config.CacheBucketsNum)
+	// TODO: how to handle when the bucket's num is changed
+	l.Lock()
+	defer l.Unlock()
 
-	for i := 0; i < config.CacheBucketsNum; i++ {
-		entriesLock[i] = new(sync.RWMutex)
-		entries[i] = make(map[string][]*Entry)
+	if entries == nil {
+		entries = make([]map[string][]*Entry, config.CacheBucketsNum)
+		for i := 0; i < config.CacheBucketsNum; i++ {
+			entries[i] = make(map[string][]*Entry)
+		}
+	}
+
+	if entriesLock == nil {
+		entriesLock = make([]*sync.RWMutex, config.CacheBucketsNum)
+		for i := 0; i < config.CacheBucketsNum; i++ {
+			entriesLock[i] = new(sync.RWMutex)
+		}
 	}
 
 	return &HTTPCache{
