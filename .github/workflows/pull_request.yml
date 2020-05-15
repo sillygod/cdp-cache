@@ -1,17 +1,17 @@
-name: CI
+name: PR-CI
 
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
 on:
-  push:
+  pull_request:
     branches: [ master ]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
-  build:
+  test:
     # The type of runner that the job will run on
-    name: Build
+    name: Test
     runs-on: ubuntu-latest
 
     # Steps represent a sequence of tasks that will be executed as part of the job
@@ -34,22 +34,5 @@ jobs:
       - name: build
         run: |
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o caddy cmd/main.go
-          zip binarys caddy
-
-      - name: upload assets
-        uses: actions/upload-artifact@v1
-        with:
-          name: binary
-          path: ./binarys.zip
-
-      - name: docker build and push
-        uses: docker/build-push-action@v1
-        with:
-          registry: docker.pkg.github.com
-          repository: sillygod/cdp-cache/caddy
-          username: sillygod
-          password: ${{ secrets.GITHUB_TOKEN }}
-          tags: latest
-
-
+  
 

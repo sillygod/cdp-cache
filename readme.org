@@ -1,3 +1,7 @@
+#+HTML: <a href="https://goreportcard.com/report/github.com/sillygod/cdp-cache"><img src="https://goreportcard.com/badge/github.com/sillygod/cdp-cache" /></a>
+#+HTML: </div>
+
+
 * Caddy Http Cache
 
   This is a http cache plugin for caddy 2. In fact, I am not familiar with the mechanism of the cdn cache so I borrow the code from https://github.com/nicolasazrak/caddy-cache. which is the caddy v1's cache module. Then, I migrate the codebase to be consist with the caddy2 architecture, do some change, and implement more feature for it.

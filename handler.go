@@ -174,7 +174,7 @@ func (h *Handler) Validate() error {
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhttp.Handler) error {
 
-	// add a log here to record the elapsed time (from receiving the request to send the reponse)
+	// add a log here to record the elapsed time (from receiving the request to send the response)
 	start := time.Now()
 	upstreamDuration := time.Duration(0)
 
@@ -207,7 +207,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyht
 	}
 
 	key := getKey(h.Config.CacheKeyTemplate, r)
-	lock := h.URLLocks.Adquire(key)
+	lock := h.URLLocks.Acquire(key)
 	defer lock.Unlock()
 
 	// Lookup correct entry
@@ -220,7 +220,6 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyht
 		if err := h.respond(w, previousEntry, cacheHit); err == nil {
 			return nil
 		}
-		exists = false
 	}
 
 	// Second case: CACHE SKIP

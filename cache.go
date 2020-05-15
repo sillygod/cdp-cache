@@ -124,8 +124,8 @@ func judgeResponseShouldCacheOrNot(req *http.Request,
 
 	var reqHeaders http.Header
 	var reqMethod string
+	var reqDir *cacheobject.RequestCacheDirectives
 
-	var reqDir *cacheobject.RequestCacheDirectives = nil
 	respDir, err := cacheobject.ParseResponseCacheControl(respHeaders.Get("Cache-Control"))
 	if err != nil {
 		return nil, time.Time{}, nil, nil, err

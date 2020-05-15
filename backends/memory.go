@@ -45,6 +45,9 @@ func InitGroupCacheRes(maxSize int) error {
 			return err
 		}
 		_, err = atch.Join(nil)
+		if err != nil {
+			return err
+		}
 	}
 
 	if pool == nil {

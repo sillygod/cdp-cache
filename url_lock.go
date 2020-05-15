@@ -28,8 +28,8 @@ func NewURLLock(config *Config) *URLLock {
 	}
 }
 
-// Adquire a lock for given key
-func (allLocks *URLLock) Adquire(key string) *sync.Mutex {
+// Acquire a lock for given key
+func (allLocks *URLLock) Acquire(key string) *sync.Mutex {
 	bucketIndex := allLocks.getBucketIndexForKey(key)
 	allLocks.globalLocks[bucketIndex].Lock()
 	defer allLocks.globalLocks[bucketIndex].Unlock()
