@@ -206,8 +206,6 @@ func getCacheStatus(req *http.Request, response *Response, config *Config) (bool
 		return false, time.Now()
 	}
 
-	// TODO: the expiration here.. is weird
-	// implement my own cache expire rule
 	reasonsNotToCache, expiration, _, _, err := judgeResponseShouldCacheOrNot(req, response.Code, response.snapHeader, false)
 	if err != nil {
 		return false, time.Time{}
@@ -348,6 +346,7 @@ type HTTPCache struct {
 
 // NewHTTPCache new a HTTPCache to hanle cache entries
 func NewHTTPCache(config *Config) *HTTPCache {
+	// TODO: think how to apply UsagePool
 	entries := make([]map[string][]*Entry, config.CacheBucketsNum)
 	entriesLock := make([]*sync.RWMutex, config.CacheBucketsNum)
 

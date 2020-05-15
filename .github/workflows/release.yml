@@ -4,7 +4,6 @@ on:
     tags:
       - 'v*'
 
-
 name: create release
 
 jobs:
@@ -12,15 +11,22 @@ jobs:
     name: build assets and make release
     runs-on: ubuntu-latest
     steps:
+      - name: set up go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ^1.14
+        id: go
+
       - name: checkout
         uses: actions/checkout@v2
+
       - name: build
         run: |
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o caddy cmd/main.go
           zip linux-binary caddy
       - name: create release
         id: create_release
-        uses: actions/create-lease@v1
+        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -38,3 +44,12 @@ jobs:
           asset_path: ./linux-binary.zip
           asset_name: linux-binary.zip
           asset_content_type: application/zip
+
+      - name: docker build and push
+        uses: docker/build-push-action@v1
+        with:
+          registry: docker.pkg.github.com
+          repository: sillygod/cdp-cache/caddy
+          username: sillygod
+          password: ${{ secrets.GITHUB_TOKEN }}
+          tags: ${{ github.ref }}

@@ -12,7 +12,6 @@ type URLLock struct {
 	urlLockBucketsSize int
 }
 
-// It seems that this lock is related to uri
 func NewURLLock(config *Config) *URLLock {
 	globalLocks := make([]*sync.Mutex, config.CacheBucketsNum)
 	keys := make([]map[string]*sync.Mutex, config.CacheBucketsNum)
