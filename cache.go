@@ -326,7 +326,7 @@ func (e *Entry) IsFresh() bool {
 	return e.expiration.After(time.Now())
 }
 
-func (e *Entry) setBackend(ctx context.Context, config *Config, key string) error {
+func (e *Entry) setBackend(ctx context.Context, config *Config) error {
 	var backend backends.Backend
 	var err error
 	// I can give the context here?
@@ -334,7 +334,7 @@ func (e *Entry) setBackend(ctx context.Context, config *Config, key string) erro
 	case file:
 		backend, err = backends.NewFileBackend(config.Path)
 	case inMemory:
-		backend, err = backends.NewInMemoryBackend(ctx, key)
+		backend, err = backends.NewInMemoryBackend(ctx, e.key)
 	}
 
 	e.Response.SetBody(backend)
@@ -407,6 +407,28 @@ func (h *HTTPCache) Get(key string, request *http.Request) (*Entry, bool) {
 	}
 
 	return nil, false
+}
+
+// Del purge the key immediately
+func (h *HTTPCache) Del(key string, request *http.Request) bool {
+	b := h.getBucketIndexForKey(key)
+	h.entriesLock[b].Lock()
+	defer h.entriesLock[b].Unlock()
+
+	previousEntries, exists := h.entries[b][key]
+
+	if !exists {
+		return true
+	}
+
+	// the schedule will clean the entry automatically
+	for _, entry := range previousEntries {
+		if entry.IsFresh() {
+			h.cleanEntry(entry)
+		}
+	}
+
+	return true
 }
 
 // Put adds the entry in the cache

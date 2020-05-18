@@ -1,3 +1,6 @@
+#+HTML: <a href="https://github.com/sillygod/cdp-cache/actions?query=workflow%3ACI"><img src="https://github.com/sillygod/cdp-cache/workflows/CI/badge.svg?branch=master" /></a>
+#+HTML: </div>
+
 #+HTML: <a href="https://goreportcard.com/report/github.com/sillygod/cdp-cache"><img src="https://goreportcard.com/badge/github.com/sillygod/cdp-cache" /></a>
 #+HTML: </div>
 

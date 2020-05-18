@@ -1,0 +1,13 @@
+* How to run
+  
+These benchmarks are borrowed from [[https://github.com/nicolasazrak/caddy-cache][here]] for comparision.
+
+#+begin_src sh
+  bash provision.sh
+#+end_src
+
+This will move the test data to the directory which will be served by Caddy. Then, run your caddy with the Caddyfile provided by benchmark.
+
+#+begin_src sh
+  caddy run --config [benchmark's Caddyfile]
+#+end_src
