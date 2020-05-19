@@ -3,9 +3,11 @@ package backends
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"sync"
+	"time"
 
 	"github.com/golang/groupcache"
 	"github.com/pomerium/autocache"
@@ -68,11 +70,15 @@ func getter(ctx context.Context, key string, dest groupcache.Sink) error {
 }
 
 // NewInMemoryBackend get the singleton of groupcache
-func NewInMemoryBackend(ctx context.Context, key string) (Backend, error) {
-	return &InMemoryBackend{
-		Ctx: ctx,
-		Key: key,
-	}, nil
+func NewInMemoryBackend(ctx context.Context, key string, expiration time.Time) (Backend, error) {
+	// add the expiration time as the suffix of the key
+	i := &InMemoryBackend{Ctx: ctx}
+	i.Key = i.composeKey(key, expiration)
+	return i, nil
+}
+
+func (i *InMemoryBackend) composeKey(key string, expiration time.Time) string {
+	return fmt.Sprintf("%s:%d", key, expiration.Unix())
 }
 
 // Write adds the response content in the context for the groupcache's
@@ -86,7 +92,8 @@ func (i *InMemoryBackend) Flush() error {
 }
 
 func (i *InMemoryBackend) Clean() error {
-	// TODO: implement del the cache
+	// NOTE: there is no way to del or update the cache in groupcache
+	// Therefore, I use the cache invalidation instead.
 	return nil
 }
 

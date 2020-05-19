@@ -243,7 +243,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyht
 
 	// Case when response was private but now is public
 	if entry.isPublic {
-		err := entry.setBackend(r.Context(), h.Config, key)
+		err := entry.setBackend(r.Context(), h.Config)
 		if err != nil {
 			w.WriteHeader(500)
 			return err

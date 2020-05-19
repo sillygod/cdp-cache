@@ -1,0 +1,838 @@
+﻿The Project Gutenberg EBook of Comments on the Taxonomic Status of
+Apodemus peninsulae, with Description of a New Subspecies from North China, by J. Knox Jones, Jr.
+
+This eBook is for the use of anyone anywhere at no cost and with
+almost no restrictions whatsoever.  You may copy it, give it away or
+re-use it under the terms of the Project Gutenberg License included
+with this eBook or online at www.gutenberg.org
+
+
+Title: Comments on the Taxonomic Status of Apodemus peninsulae, with Description of a New Subspecies from North China
+
+Author: J. Knox Jones, Jr.
+
+Release Date: March 17, 2010 [EBook #31674]
+
+Language: English
+
+
+*** START OF THIS PROJECT GUTENBERG EBOOK APODEMUS PENINSULAE ***
+
+
+
+
+Produced by Chris Curnow, Joseph Cooper, Joseph R. Hauser
+and the Online Distributed Proofreading Team at
+http://www.pgdp.net
+
+
+
+
+
+UNIVERSITY OF KANSAS PUBLICATIONS
+MUSEUM OF NATURAL HISTORY
+
+Volume 9, No. 8, pp. 337-346, 1 fig. in text, 1 table
+
+August 15, 1956
+
+
+
+
+Comments on the Taxonomic Status of
+Apodemus peninsulae, with Description
+of a New Subspecies from North China
+
+BY
+
+J. KNOX JONES, JR.
+
+
+
+
+UNIVERSITY OF KANSAS
+LAWRENCE
+1956
+
+
+
+
+UNIVERSITY OF KANSAS PUBLICATIONS, MUSEUM OF NATURAL HISTORY
+
+Editors: E. Raymond Hall, Chairman, A. Byron Leonard,
+Robert W. Wilson
+
+
+Volume 9, No. 8, pp. 337-346, 1 fig. in text, 1 table
+Published August 15, 1956
+
+
+
+
+UNIVERSITY OF KANSAS
+Lawrence, Kansas
+
+
+
+
+PRINTED BY
+FERD VOILAND, JR., STATE PRINTER
+TOPEKA, KANSAS
+1956
+
+26-3854
+
+
+
+
+Comments on the Taxonomic Status of Apodemus peninsulae, with
+Description of a New Subspecies from North China
+
+BY
+
+J. KNOX JONES, JR.
+
+
+In the past several years the United States National Museum has received
+a large number of mammals from central and southern Korea through the
+auspices of the Commission on Hemorrhagic Fever of the Armed Forces
+Epidemiological Board. Among these Korean collections are more than a
+hundred specimens of a murine rodent originally described as "_Micromys
+speciosus peninsulae_" by Oldfield Thomas but currently placed in the
+genus _Apodemus_. In attempting to ascertain the specific relationships
+of this mouse I have examined, through the generosity of Dr. David H.
+Johnson, Acting Curator of Mammals, most of the other Oriental specimens
+of the subgenus _Sylvaemus_ in the U. S. National Museum and it is on
+this combined material that the following comments and description are
+based.
+
+Three general groups of the genus _Apodemus_ are presently known to
+occur on the mainland of northeast Asia. One is the distinctive
+_Apodemus agrarius_, lone representative of the subgenus _Apodemus_. The
+others, both in the subgenus _Sylvaemus_ and closely resembling each
+other, are represented by a small animal that is currently regarded as
+conspecific with _Apodemus sylvaticus_ and a larger animal of which the
+Korean mouse, _peninsulae_, is representative. The oldest trivial name
+applied to the large _Sylvaemus_ is _major_ of Radde, 1862, in the
+combination [_Mus sylvaticus_] vrt. _major_. This is, however, twice
+preoccupied (see Ellerman and Morrison-Scott, 1951:566). The next
+available name is _peninsulae_ of Thomas, 1907, which was applied to
+mice from central and southern Korea (type from Mun'gyong, 110 mi. SE
+Seoul, Korea), and was originally proposed as a subspecies of the
+insular Japanese species, _Apodemus speciosus_. G. M. Allen (1940:949),
+who recognized _peninsulae_ as a monotypic species, was the first
+investigator to make the important distinction that it was not
+conspecific with the Japanese _speciosus_, although Hollister (1913:1-2)
+and Miller (1914:89) had previously used the combination _Apodemus
+peninsulae_, evidently with the same thought in mind.
+
+[Illustration: FIG. 1. Ventral views of skulls and left maxillary
+tooth-rows of two species of the genus _Apodemus_.
+
+_a._ _Apodemus flavicollis flavicollis_ (Melchior), Lolland, Denmark,
+adult [Male], No. 141691 USNM, ×2.
+
+_b._ _Apodemus flavicollis flavicollis_ (Melchior), Mauseklippe,
+Germany, young [Male], No. 112895 USNM, ×10.
+
+_c._ _Apodemus peninsulae peninsulae_ (Thomas), Central Nat'l Forest,
+near Pup'yong-ni, 200 m., Korea, subadult [Female], No. 300650 USNM,
+×10.
+
+_d._ _Apodemus peninsulae peninsulae_ (Thomas), 6 mi. S Yongdongp'o,
+Korea, adult [Male], No. 299554 USNM, ×2.
+
+In comparing the ventral views of skulls note especially the size and
+location of incisive foramina and posterior palatine foramina as well as
+the breadth of mesopterygoid fossae. In comparing the left maxillary
+tooth-rows note especially the size of M3 and the reduced
+posterointernal cusp on Ml in _A. peninsulae_.]
+
+More recently, Ellerman (1949:32) and Ellerman and Morrison-Scott
+(1951:566) have arranged _peninsulae_ as a subspecies of _Apodemus
+flavicollis_ under the assumption that all the members of the subgenus
+_Sylvaemus_ on the eastern Asiatic mainland are subspecies of one or
+another of the species of western Europe, _A. flavicollis_ or _A.
+sylvaticus_. Ellerman (in Ellerman and Morrison-Scott, 1951:564) states:
+"The majority of the forms I distribute in a somewhat arbitrary manner
+between _sylvaticus_, average smaller skull, and _flavicollis_, average
+larger skull; occurring together nearly throughout the Palaearctic. I
+feel fairly sure that there are some errors of judgment in my
+arrangement, and equally sure that there is no other way to define
+species in this very large and difficult group." I have compared the
+specimens of _peninsulae_ available to me from central and southern
+Korea with specimens of _A. f. flavicollis_ from Denmark, Germany and
+Sweden and find, although the two are similar in many ways, that
+_peninsulae_ differs from _flavicollis_ in several important characters:
+Mammae 1-2=6 in _flavicollis_, and 2-2=8 in _peninsulae_; incisive
+foramina reaching level of alveoli of M1, or nearly so, in
+_flavicollis_, but ending conspicuously short of that level in
+_peninsulae_; posterior palatine foramina large in _flavicollis_ and
+opposite a point where M1 and M2 meet, but small in _peninsulae_ and
+situated farther back on the palate, opposite M2. Moreover, _peninsulae_
+lacks the characteristic buffy throat patch of _flavicollis_, has a much
+reduced posterointernal cusp on the M1, a relatively (frequently
+actually) larger M3 and, on the average, a broader mesopterygoid fossa.
+In view of these differences, all of which appear to be constant, I
+consider _peninsulae_ specifically distinct from _flavicollis_.
+Throughout its known geographic range (see below) _peninsulae_ is
+evidently confined to wooded terrain, either scrub or brush types or
+forested areas, and the vernacular name wood mouse, therefore, seems
+appropriate for this species.
+
+The type specimens of _Apodemus praetor_ Miller (type from Sungari
+River, 60 mi. SW Kirin, Manchuria) and _Apodemus nigritalus_ Hollister
+(type from Tapucha, Altai Mountains, Siberia) agree with _peninsulae_ as
+concerns the above characters and differ from it only in minor external
+and cranial features. They are, therefore, here considered as subspecies
+of the latter.
+
+Ellerman (1949:32) and Ellerman and Morrison-Scott (1951:567) regarded
+_nigritalus_, like _peninsulae_, as a subspecies of _flavicollis_. The
+subspecies _praetor_, on the other hand, has generally been regarded as
+a synonym of _peninsulae_ by recent authors. Howell (1929:58) noted that
+the holotype was, "... a phenomenally large specimen such as is
+encountered occasionally in almost all groups of rodents." He ascribed
+the color differences noted by Miller to "seasonal" variation. The
+holotype of _praetor_ is undeniably larger than the other adult
+specimens listed in the original description. These paratypes and other
+specimens of _praetor_ available to me are approximately the same size
+externally and average only slightly larger cranially than specimens of
+_peninsulae_ from central and southern Korea. However, the dorsal
+coloration of _praetor_ is somewhat darker and duller than that of
+_peninsulae_, especially in summer pelage when _praetor_ lacks the
+conspicuous bright ochraceous tinge of the Korean specimens. In
+addition, _praetor_ has broader zygomatic plates with correspondingly
+deeper zygomatic notches and the color on the face of the upper incisors
+averages much more orange than in _peninsulae_.
+
+In the north then, wood mice range from Korea and Manchuria westward at
+least as far as the Altai Mountains. For mice from the intervening
+Siberian areas Russian workers have used the name _major_ which, as
+noted above, is unavailable. The exact relationships of the mice of
+these areas to previously named subspecies is unknown to me and I have
+not seen specimens of "_Mus (Alsomys) major rufulus_" of Dukelsky, 1928,
+the type locality of which is 75 versts (approximately 50 miles) SE
+Vladivostok, Siberia. It appears to be of the same species as
+_peninsulae_ and judging from the original description it closely
+resembles _praetor_. Neither have I seen specimens of the Sakhalin
+Island mouse, _giliacus_, which Ellerman (1949:32) regards as a
+subspecies of _Apodemus sylvaticus_. I feel reasonably sure, however,
+that it will prove to be a subspecies of _peninsulae_. In the original
+description _giliacus_ was referred to as, "Most closely allied to the
+Korean subspecies..." (Thomas, 1907:411).
+
+In China the extent of the distribution of _Apodemus peninsulae_ is also
+uncertain. Allen (1940:949-50) reported its occurrence from Jehol and
+Hopeh in the northeast, southwestward through Shansi, Shensi and eastern
+Kansu to Szechuan and northwestern Yunnan. Throughout most of this
+region it occurs with another mouse, currently regarded as conspecific
+with _Apodemus sylvaticus_, and the two kinds have been confused by some
+previous authors. Howell (1929:58), for instance, reported twelve
+specimens of _peninsulae_ from 65-75 mi. NE Peking but my examination of
+these mice indicates that only four are _peninsulae_ while the others
+are referrable to what is currently regarded as _Apodemus sylvaticus
+draco_. Another subspecies of _sylvaticus_, _A. s. orestes_, occurs in
+Szechuan and Yunnan and it is certain that some records of distribution
+ascribed to _peninsulae_ from those provinces actually represent
+_orestes_ (see Allen, 1940:949-50). _A. sylvaticus_ is distinguishable
+from _peninsulae_ by darker ears, blackish preauricular patches, dark
+eye rings, a noticeably smaller skull, incisive foramina that reach the
+level of Ml (or nearly so), much larger auditory bullae, and a more
+fully developed posterointernal cusp on M1. Too, _sylvaticus_ typically
+has 1-2=6 mammae although Allen reports finding a 2-2=8 formula in some
+specimens. _Apodemus latronum_, regarded as a full species by Osgood
+(1932:318) and G. M. Allen (1940:950) but as a subspecies of
+_flavicollis_ by Ellerman (1949:32) and Ellerman and Morrison-Scott
+(1951:567), also occurs in Szechuan and Yunnan. Its relatively dark
+color, large feet and large ears, _flavicollis_-like skull and large
+molar teeth immediately separate it from _peninsulae_ although the two
+possibly have been confused in the earlier literature. Until a complete
+revisionary study of the Asiatic members of the subgenus _Sylvaemus_ can
+be undertaken the presence of _peninsulae_ in southwestern China must
+remain in question.
+
+The western limits of the geographic range of _Apodemus peninsulae_ are
+unknown. _Apodemus gurkha_ Thomas, 1924, from Nepal is said to have
+2-2=8 mammae but the description is not otherwise suggestive of close
+relationship to _peninsulae_. Farther to the west, _Apodemus flavicollis
+rusiges_ Miller, 1913, from Kashmir seems to have been properly assigned
+as a subspecies of _flavicollis_ (cotypes and large series in USNM).
+
+Wood mice almost certainly do not occur in the Gobi Desert. They are
+known as far west as the Altai Mountains to the north of the Gobi and at
+least as far west as Kansu (see below) to the south of it. Whether the
+geographic range of the species skirts the western edge of the arid
+regions of northern China is at present unknown; perhaps it does not. At
+any rate, mice available to me from the North Chinese provinces of
+Jehol, Shansi, Shensi and Kansu are notably different in certain
+external and cranial features from other known races of _Apodemus
+peninsulae_ and are here given subspecific recognition. All measurements
+are in millimeters. Capitalized color terms are from Ridgway (1912).
+
+
+Apodemus peninsulae sowerbyi, new subspecies
+
+     _Type._--Adult female molting from winter to summer pelage, skin
+     and skull, U. S. National Museum no. 175523, from 30 miles west of
+     Kuei-hua-cheng, 7000 ft., northern Shansi, China; obtained on 23
+     May 1912 by Arthur de Carle Sowerby, original no. 456.
+
+     _Distribution._--Known presently from eastern Kansu eastward
+     through Shensi, Shansi and Hopeh to southern Jehol, probably also
+     in northeastern Szechuan, exact limits of range unknown.
+
+     _Diagnosis._--Size small for species (see measurements). Color:
+     Upper parts (fresh summer pelage) averaging near (15'_a_)
+     Ochraceous-Buff, suffused with blackish (especially mid-dorsally);
+     winter pelage much paler; underparts grayish-white, individual
+     hairs plumbeous at base, tipped with white; ears pale brownish;
+     feet whitish above, darker below; tail bicolor, pale brownish
+     above, whitish below. Skull: Small (see measurements); rostrum
+     somewhat shortened and conspicuously down-curved; zygomatic notches
+     relatively shallow; zygomatic plates narrow; braincase
+     proportionally more inflated than in other subspecies of the
+     species; auditory bullae moderately inflated; upper incisors
+     slender, their faces averaging bright yellowish-orange.
+
+     _Measurements._--External measurements of the holotype, followed by
+     those of an adult male and female from the type locality, are,
+     respectively: Length of head and body, 101, 102, 100; length of
+     tail, 93, ----, 102; length of hind foot (_su_), 21, 21.5, 23;
+     length of ear from notch, 14, 16, 15.5. Corresponding measurements
+     for an adult female from 20 mi. E Taiyuan, Shansi, are: 91, 99, 23,
+     16. For cranial measurements see Table 1.
+
+
+Table Key:
+
+A: Occipitonasal length
+B: Zygomatic breadth
+C: Mastoid breadth
+D: Interorbital length
+E: Frontonasal length
+F: Nasal length
+G: Depth of skull
+H: Alveolar length of maxiary tooth-row
+
+
+TABLE 1.--CRANIAL MEASUREMENTS OF ADULTS OF SEVERAL SUBSPECIES OF
+APODEMUS PENINSULAE
+============================================================================
+        Sex           |      |      |      |     |      |      |      |     |
+    and catalogue     |   A  |   B  |   C  |  D  |   E  |   F  |  G   |  H  |
+number or number of   |      |      |      |     |      |      |      |     |
+individuals averaged  |      |      |      |     |      |      |      |     |
+----------------------------------------------------------------------------
+
+  _Apodemus peninsulae peninsulae_, various localities in central Korea
+Average 10 (4M, 6F)   | 29.2 | 14.2 | 11.8 | 4.7 | 20.1 | 11.4 | 10.2 | 4.3 |
+Minimum               | 28.3 | 13.8 | 11.5 | 4.6 | 19.2 | 10.8 |  9.9 | 4.1 |
+Maximum               | 29.8 | 14.6 | 12.2 | 5.1 | 20.7 | 12.0 | 10.5 | 4.4 |
+
+  _Apodemus peninsulae nigritalus_, Tapucha, Altai Mts., Siberia
+USNM 175164, M (type) | 28.8 | 14.8 | 12.4 | 4.5 | 20.8 | 11.7 | 11.0 | 4.4 |
+USNM 175171, F        | 28.2 | 13.7 | 11.8 | 4.5 | 19.8 | 11.2 | 10.3 | 4.5 |
+
+  _Apodemus peninsulae praetor_, Sungari River, 60 mi. SW Kirin, Manchuria
+USNM 197792, M (type) | 30.5 | .... | 12.5 | 4.7 | 21.5 | 12.5 | 10.3 | 4.6 |
+USNM 197798, F        | 30.2 | 14.4 | 11.8 | 4.6 | 21.6 | 12.7 | 10.6 | 4.6 |
+
+  Mukden, Manchuria
+USNM 197782, M        | 29.5 | 14.8 | 12.4 | 4.8 | 20.6 | 12.2 | 10.5 | 4.2 |
+
+  _Apodemus peninsulae sowerbyi_, Kuei-hau-cheng, Shansi
+USNM 175523, F (type) | 27.9 | 13.3 | 11.7 | 4.5 | 19.6 | 11.4 |  9.9 | 4.0 |
+USNM 175521, M        | 27.6 | .... | 11.5 | 4.6 | 18.9 | 11.4 |  9.7 | 4.1 |
+USNM 175522, F        | 27.9 | .... | 11.8 | 4.6 | 19.4 | 11.3 |  9.8 | 4.2 |
+
+  20 mi. E Taiyuan, Shansi
+USNM 172558, F        | 27.4 | 13.8 | 11.5 | 4.6 | 19.4 | 11.6 | 10.1 | 4.4 |
+
+  12 mi. S Yenan, Shensi
+USNM 155072, M        | 27.8 | 14.1 | .... | 4.4 | 19.5 | 11.0 | .... | 4.3 |
+USNM 155073, F        | 27.7 | 13.3 | 11.5 | 4.5 | 19.4 | 11.0 | 10.0 | 4.2 |
+USNM 155075, M        | 27.9 | 13.5 | 11.4 | 4.5 | 19.2 | 11.0 | 10.0 | 4.3 |
+
+  Hsin-lung-shan, 65 mi. NE Peking, Jehol
+USNM 219229, M        | 27.7 | 13.8 | 11.4 | 4.5 | 19.0 | 10.9 | 10.4 | 4.4 |
+
+15 mi. S Lanchow, Kansu
+USNM 155171, M        | 27.7 | 13.6 | 11.7 | 4.6 | 19.0 | 11.3 |  9.9 | 4.5 |
+
+_Comparisons._--From _Apodemus peninsulae peninsulae_ (specimens from
+various localities in central Korea), _A. p. sowerbyi_ differs in:
+External size smaller throughout, especially hind foot; upper parts,
+especially in summer pelage, and dorsal aspect of tail paler; skull
+smaller and less massive; braincase proportionally more inflated;
+rostrum shorter and noticeably down-curved. From _Apodemus peninsulae
+praetor_ of Manchuria (holotype and paratypes), _A. p. sowerbyi_ differs
+in most of the same ways in which it does from _peninsulae_ as well as
+in having more shallow zygomatic notches, narrower zygomatic plates and
+smaller, more slender, upper incisors. From _Apodemus peninsulae
+nigritalus_ of the Altai Mountains of Siberia (holotype and paratypes),
+_A. p. sowerbyi_ differs in: Smaller size, both external and cranial;
+paler dorsal coloration; less convex cranial outline in lateral view;
+smaller auditory bullae.
+
+_Remarks._--_Apodemus peninsulae sowerbyi_ is named in honor of the late
+Arthur de Carle Sowerby whose collections of mammals from North China
+and Manchuria have added so much to our meager knowledge of that part of
+the world.
+
+Four specimens from Hsin-lung-shan, 65 mi. NE Peking, here assigned to
+_sowerbyi_, are darker dorsally than mice from farther to the west and
+in this respect may show approach to _A. p. praetor_. In all other
+features, however, they closely resemble the new subspecies.
+
+All of the specimens of _sowerbyi_ available to me are from altitudes of
+3000 feet or higher. At lower elevations in North China, destruction of
+wooded habitats owing to intense land-use practices has probably
+restricted the distribution of _sowerbyi_ primarily to hilly and
+mountainous areas where brushy, scrub and forest habitats still prevail.
+
+     _Specimens examined._--Thirty-three, all from North China, as
+     follows: JEHOL: Hsin-lung-shan, 65 mi. NE Peking, 3000 ft., 4.
+     KANSU: 15 mi. S Lanchow, 7400 ft., 1. SHANSI: Chiao-cheng-shan, 90
+     mi. W Taiyuan, 7000-8000 ft., 4; 30 mi. W Kuei-hau-cheng, 7000 ft.,
+     5; Lung-wang-shan, 20 mi. E Taiyuan, 4000 ft., 10; 18 mi. W
+     Taiyuan, 5000 ft., 1; 50 mi. NW Taiyuan, 5500 ft., 4. SHENSI: 12
+     mi. S Yenan, 4000 ft., 4.
+
+_Apodemus peninsulae_, then, is known or suspected to occur over much of
+southeastern Siberia, Manchuria, Korea and North China. The western
+limits of its geographic range are unknown. Over this vast area only
+four subspecies, one newly named, can be ascribed with certainty to
+_peninsulae_ whereas only two other kinds, _giliacus_ of Thomas from
+Sakhalin and _rufulus_ of Dukelsky from extreme southeastern Siberia are
+probably conspecific with it, the latter possibly a synonym of
+_praetor_. These considerations underscore the preliminary nature of the
+present paper. The mammalian fauna of northeastern Asia is scarcely
+better known today than was that of North America in 1885 when Dr. C.
+Hart Merriam organized what was later to become the U. S. Biological
+Survey.
+
+It seems to me that the correct names of four kinds of wood mice
+discussed above are as follows:
+
+_Apodemus peninsulae peninsulae_ (Thomas, 1907)
+_Apodemus peninsulae nigritalus_ Hollister, 1913
+_Apodemus peninsulae praetor_ Miller, 1914
+_Apodemus peninsulae sowerbyi_ Jones, 1956
+
+
+LITERATURE CITED
+
+ALLEN, G. M.
+     1940. The mammals of China and Mongolia. Amer. Mus. Nat. Hist., New
+           York, 2:XXVI + 621-1350, September 3.
+
+ELLERMAN, J. R.
+     1949. The families and genera of living rodents. British Mus.,
+           London, 3:V + 1-210, March.
+
+ELLERMAN, J. R., and T. C. S. MORRISON-SCOTT.
+     1951. Checklist of Palaearctic and Indian mammals, 1758 to 1946.
+           British Mus., London, 810 p., November 19.
+
+HOLLISTER, N.
+     1913. Two new mammals from the Siberian Altai. Smith. Misc. Coll.,
+           60:1-3, March 13.
+
+HOWELL, A. B.
+     1929. Mammals from China in the collections of the United States
+           National Museum. Proc. U. S. Nat. Mus., 75:1-82, June 7.
+
+MILLER, G. S., JR.
+     1914. Two new murine rodents from eastern Asia. Proc. Biol. Soc.
+           Washington, 27:89-92, May 11.
+
+OSGOOD, W. H.
+     1932. Mammals of the Kelley-Roosevelts and Delacour Asiatic
+           expeditions. Field Columb. Mus. Nat. Hist., Zool. Series,
+           18:193-339, August 19.
+
+RIDGWAY, R.
+     1912. Color standards and color nomenclature. Washington, D. C.,
+           published by the author.
+
+THOMAS, O.
+     1907. The Duke of Bedford's zoological explorations in eastern
+           Asia.--IV. A list of small mammals from the islands of Saghalien
+           and Hokkaido. Proc. Zool. Soc. London, 1907:404-414, August 1.
+
+
+_Transmitted May 12, 1956._
+
+
+26-3854
+
+
+
+
+
+End of the Project Gutenberg EBook of Comments on the Taxonomic Status of
+Apodemus peninsulae, with Description of a New Subspecies from North China, by J. Knox Jones, Jr.
+
+*** END OF THIS PROJECT GUTENBERG EBOOK APODEMUS PENINSULAE ***
+
+***** This file should be named 31674-8.txt or 31674-8.zip *****
+This and all associated files of various formats will be found in:
+        http://www.gutenberg.org/3/1/6/7/31674/
+
+Produced by Chris Curnow, Joseph Cooper, Joseph R. Hauser
+and the Online Distributed Proofreading Team at
+http://www.pgdp.net
+
+
+Updated editions will replace the previous one--the old editions
+will be renamed.
+
+Creating the works from public domain print editions means that no
+one owns a United States copyright in these works, so the Foundation
+(and you!) can copy and distribute it in the United States without
+permission and without paying copyright royalties.  Special rules,
+set forth in the General Terms of Use part of this license, apply to
+copying and distributing Project Gutenberg-tm electronic works to
+protect the PROJECT GUTENBERG-tm concept and trademark.  Project
+Gutenberg is a registered trademark, and may not be used if you
+charge for the eBooks, unless you receive specific permission.  If you
+do not charge anything for copies of this eBook, complying with the
+rules is very easy.  You may use this eBook for nearly any purpose
+such as creation of derivative works, reports, performances and
+research.  They may be modified and printed and given away--you may do
+practically ANYTHING with public domain eBooks.  Redistribution is
+subject to the trademark license, especially commercial
+redistribution.
+
+
+
+*** START: FULL LICENSE ***
+
+THE FULL PROJECT GUTENBERG LICENSE
+PLEASE READ THIS BEFORE YOU DISTRIBUTE OR USE THIS WORK
+
+To protect the Project Gutenberg-tm mission of promoting the free
+distribution of electronic works, by using or distributing this work
+(or any other work associated in any way with the phrase "Project
+Gutenberg"), you agree to comply with all the terms of the Full Project
+Gutenberg-tm License (available with this file or online at
+http://gutenberg.org/license).
+
+
+Section 1.  General Terms of Use and Redistributing Project Gutenberg-tm
+electronic works
+
+1.A.  By reading or using any part of this Project Gutenberg-tm
+electronic work, you indicate that you have read, understand, agree to
+and accept all the terms of this license and intellectual property
+(trademark/copyright) agreement.  If you do not agree to abide by all
+the terms of this agreement, you must cease using and return or destroy
+all copies of Project Gutenberg-tm electronic works in your possession.
+If you paid a fee for obtaining a copy of or access to a Project
+Gutenberg-tm electronic work and you do not agree to be bound by the
+terms of this agreement, you may obtain a refund from the person or
+entity to whom you paid the fee as set forth in paragraph 1.E.8.
+
+1.B.  "Project Gutenberg" is a registered trademark.  It may only be
+used on or associated in any way with an electronic work by people who
+agree to be bound by the terms of this agreement.  There are a few
+things that you can do with most Project Gutenberg-tm electronic works
+even without complying with the full terms of this agreement.  See
+paragraph 1.C below.  There are a lot of things you can do with Project
+Gutenberg-tm electronic works if you follow the terms of this agreement
+and help preserve free future access to Project Gutenberg-tm electronic
+works.  See paragraph 1.E below.
+
+1.C.  The Project Gutenberg Literary Archive Foundation ("the Foundation"
+or PGLAF), owns a compilation copyright in the collection of Project
+Gutenberg-tm electronic works.  Nearly all the individual works in the
+collection are in the public domain in the United States.  If an
+individual work is in the public domain in the United States and you are
+located in the United States, we do not claim a right to prevent you from
+copying, distributing, performing, displaying or creating derivative
+works based on the work as long as all references to Project Gutenberg
+are removed.  Of course, we hope that you will support the Project
+Gutenberg-tm mission of promoting free access to electronic works by
+freely sharing Project Gutenberg-tm works in compliance with the terms of
+this agreement for keeping the Project Gutenberg-tm name associated with
+the work.  You can easily comply with the terms of this agreement by
+keeping this work in the same format with its attached full Project
+Gutenberg-tm License when you share it without charge with others.
+
+1.D.  The copyright laws of the place where you are located also govern
+what you can do with this work.  Copyright laws in most countries are in
+a constant state of change.  If you are outside the United States, check
+the laws of your country in addition to the terms of this agreement
+before downloading, copying, displaying, performing, distributing or
+creating derivative works based on this work or any other Project
+Gutenberg-tm work.  The Foundation makes no representations concerning
+the copyright status of any work in any country outside the United
+States.
+
+1.E.  Unless you have removed all references to Project Gutenberg:
+
+1.E.1.  The following sentence, with active links to, or other immediate
+access to, the full Project Gutenberg-tm License must appear prominently
+whenever any copy of a Project Gutenberg-tm work (any work on which the
+phrase "Project Gutenberg" appears, or with which the phrase "Project
+Gutenberg" is associated) is accessed, displayed, performed, viewed,
+copied or distributed:
+
+This eBook is for the use of anyone anywhere at no cost and with
+almost no restrictions whatsoever.  You may copy it, give it away or
+re-use it under the terms of the Project Gutenberg License included
+with this eBook or online at www.gutenberg.org
+
+1.E.2.  If an individual Project Gutenberg-tm electronic work is derived
+from the public domain (does not contain a notice indicating that it is
+posted with permission of the copyright holder), the work can be copied
+and distributed to anyone in the United States without paying any fees
+or charges.  If you are redistributing or providing access to a work
+with the phrase "Project Gutenberg" associated with or appearing on the
+work, you must comply either with the requirements of paragraphs 1.E.1
+through 1.E.7 or obtain permission for the use of the work and the
+Project Gutenberg-tm trademark as set forth in paragraphs 1.E.8 or
+1.E.9.
+
+1.E.3.  If an individual Project Gutenberg-tm electronic work is posted
+with the permission of the copyright holder, your use and distribution
+must comply with both paragraphs 1.E.1 through 1.E.7 and any additional
+terms imposed by the copyright holder.  Additional terms will be linked
+to the Project Gutenberg-tm License for all works posted with the
+permission of the copyright holder found at the beginning of this work.
+
+1.E.4.  Do not unlink or detach or remove the full Project Gutenberg-tm
+License terms from this work, or any files containing a part of this
+work or any other work associated with Project Gutenberg-tm.
+
+1.E.5.  Do not copy, display, perform, distribute or redistribute this
+electronic work, or any part of this electronic work, without
+prominently displaying the sentence set forth in paragraph 1.E.1 with
+active links or immediate access to the full terms of the Project
+Gutenberg-tm License.
+
+1.E.6.  You may convert to and distribute this work in any binary,
+compressed, marked up, nonproprietary or proprietary form, including any
+word processing or hypertext form.  However, if you provide access to or
+distribute copies of a Project Gutenberg-tm work in a format other than
+"Plain Vanilla ASCII" or other format used in the official version
+posted on the official Project Gutenberg-tm web site (www.gutenberg.org),
+you must, at no additional cost, fee or expense to the user, provide a
+copy, a means of exporting a copy, or a means of obtaining a copy upon
+request, of the work in its original "Plain Vanilla ASCII" or other
+form.  Any alternate format must include the full Project Gutenberg-tm
+License as specified in paragraph 1.E.1.
+
+1.E.7.  Do not charge a fee for access to, viewing, displaying,
+performing, copying or distributing any Project Gutenberg-tm works
+unless you comply with paragraph 1.E.8 or 1.E.9.
+
+1.E.8.  You may charge a reasonable fee for copies of or providing
+access to or distributing Project Gutenberg-tm electronic works provided
+that
+
+- You pay a royalty fee of 20% of the gross profits you derive from
+     the use of Project Gutenberg-tm works calculated using the method
+     you already use to calculate your applicable taxes.  The fee is
+     owed to the owner of the Project Gutenberg-tm trademark, but he
+     has agreed to donate royalties under this paragraph to the
+     Project Gutenberg Literary Archive Foundation.  Royalty payments
+     must be paid within 60 days following each date on which you
+     prepare (or are legally required to prepare) your periodic tax
+     returns.  Royalty payments should be clearly marked as such and
+     sent to the Project Gutenberg Literary Archive Foundation at the
+     address specified in Section 4, "Information about donations to
+     the Project Gutenberg Literary Archive Foundation."
+
+- You provide a full refund of any money paid by a user who notifies
+     you in writing (or by e-mail) within 30 days of receipt that s/he
+     does not agree to the terms of the full Project Gutenberg-tm
+     License.  You must require such a user to return or
+     destroy all copies of the works possessed in a physical medium
+     and discontinue all use of and all access to other copies of
+     Project Gutenberg-tm works.
+
+- You provide, in accordance with paragraph 1.F.3, a full refund of any
+     money paid for a work or a replacement copy, if a defect in the
+     electronic work is discovered and reported to you within 90 days
+     of receipt of the work.
+
+- You comply with all other terms of this agreement for free
+     distribution of Project Gutenberg-tm works.
+
+1.E.9.  If you wish to charge a fee or distribute a Project Gutenberg-tm
+electronic work or group of works on different terms than are set
+forth in this agreement, you must obtain permission in writing from
+both the Project Gutenberg Literary Archive Foundation and Michael
+Hart, the owner of the Project Gutenberg-tm trademark.  Contact the
+Foundation as set forth in Section 3 below.
+
+1.F.
+
+1.F.1.  Project Gutenberg volunteers and employees expend considerable
+effort to identify, do copyright research on, transcribe and proofread
+public domain works in creating the Project Gutenberg-tm
+collection.  Despite these efforts, Project Gutenberg-tm electronic
+works, and the medium on which they may be stored, may contain
+"Defects," such as, but not limited to, incomplete, inaccurate or
+corrupt data, transcription errors, a copyright or other intellectual
+property infringement, a defective or damaged disk or other medium, a
+computer virus, or computer codes that damage or cannot be read by
+your equipment.
+
+1.F.2.  LIMITED WARRANTY, DISCLAIMER OF DAMAGES - Except for the "Right
+of Replacement or Refund" described in paragraph 1.F.3, the Project
+Gutenberg Literary Archive Foundation, the owner of the Project
+Gutenberg-tm trademark, and any other party distributing a Project
+Gutenberg-tm electronic work under this agreement, disclaim all
+liability to you for damages, costs and expenses, including legal
+fees.  YOU AGREE THAT YOU HAVE NO REMEDIES FOR NEGLIGENCE, STRICT
+LIABILITY, BREACH OF WARRANTY OR BREACH OF CONTRACT EXCEPT THOSE
+PROVIDED IN PARAGRAPH F3.  YOU AGREE THAT THE FOUNDATION, THE
+TRADEMARK OWNER, AND ANY DISTRIBUTOR UNDER THIS AGREEMENT WILL NOT BE
+LIABLE TO YOU FOR ACTUAL, DIRECT, INDIRECT, CONSEQUENTIAL, PUNITIVE OR
+INCIDENTAL DAMAGES EVEN IF YOU GIVE NOTICE OF THE POSSIBILITY OF SUCH
+DAMAGE.
+
+1.F.3.  LIMITED RIGHT OF REPLACEMENT OR REFUND - If you discover a
+defect in this electronic work within 90 days of receiving it, you can
+receive a refund of the money (if any) you paid for it by sending a
+written explanation to the person you received the work from.  If you
+received the work on a physical medium, you must return the medium with
+your written explanation.  The person or entity that provided you with
+the defective work may elect to provide a replacement copy in lieu of a
+refund.  If you received the work electronically, the person or entity
+providing it to you may choose to give you a second opportunity to
+receive the work electronically in lieu of a refund.  If the second copy
+is also defective, you may demand a refund in writing without further
+opportunities to fix the problem.
+
+1.F.4.  Except for the limited right of replacement or refund set forth
+in paragraph 1.F.3, this work is provided to you 'AS-IS' WITH NO OTHER
+WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+WARRANTIES OF MERCHANTIBILITY OR FITNESS FOR ANY PURPOSE.
+
+1.F.5.  Some states do not allow disclaimers of certain implied
+warranties or the exclusion or limitation of certain types of damages.
+If any disclaimer or limitation set forth in this agreement violates the
+law of the state applicable to this agreement, the agreement shall be
+interpreted to make the maximum disclaimer or limitation permitted by
+the applicable state law.  The invalidity or unenforceability of any
+provision of this agreement shall not void the remaining provisions.
+
+1.F.6.  INDEMNITY - You agree to indemnify and hold the Foundation, the
+trademark owner, any agent or employee of the Foundation, anyone
+providing copies of Project Gutenberg-tm electronic works in accordance
+with this agreement, and any volunteers associated with the production,
+promotion and distribution of Project Gutenberg-tm electronic works,
+harmless from all liability, costs and expenses, including legal fees,
+that arise directly or indirectly from any of the following which you do
+or cause to occur: (a) distribution of this or any Project Gutenberg-tm
+work, (b) alteration, modification, or additions or deletions to any
+Project Gutenberg-tm work, and (c) any Defect you cause.
+
+
+Section  2.  Information about the Mission of Project Gutenberg-tm
+
+Project Gutenberg-tm is synonymous with the free distribution of
+electronic works in formats readable by the widest variety of computers
+including obsolete, old, middle-aged and new computers.  It exists
+because of the efforts of hundreds of volunteers and donations from
+people in all walks of life.
+
+Volunteers and financial support to provide volunteers with the
+assistance they need, are critical to reaching Project Gutenberg-tm's
+goals and ensuring that the Project Gutenberg-tm collection will
+remain freely available for generations to come.  In 2001, the Project
+Gutenberg Literary Archive Foundation was created to provide a secure
+and permanent future for Project Gutenberg-tm and future generations.
+To learn more about the Project Gutenberg Literary Archive Foundation
+and how your efforts and donations can help, see Sections 3 and 4
+and the Foundation web page at http://www.pglaf.org.
+
+
+Section 3.  Information about the Project Gutenberg Literary Archive
+Foundation
+
+The Project Gutenberg Literary Archive Foundation is a non profit
+501(c)(3) educational corporation organized under the laws of the
+state of Mississippi and granted tax exempt status by the Internal
+Revenue Service.  The Foundation's EIN or federal tax identification
+number is 64-6221541.  Its 501(c)(3) letter is posted at
+http://pglaf.org/fundraising.  Contributions to the Project Gutenberg
+Literary Archive Foundation are tax deductible to the full extent
+permitted by U.S. federal laws and your state's laws.
+
+The Foundation's principal office is located at 4557 Melan Dr. S.
+Fairbanks, AK, 99712., but its volunteers and employees are scattered
+throughout numerous locations.  Its business office is located at
+809 North 1500 West, Salt Lake City, UT 84116, (801) 596-1887, email
+business@pglaf.org.  Email contact links and up to date contact
+information can be found at the Foundation's web site and official
+page at http://pglaf.org
+
+For additional contact information:
+     Dr. Gregory B. Newby
+     Chief Executive and Director
+     gbnewby@pglaf.org
+
+
+Section 4.  Information about Donations to the Project Gutenberg
+Literary Archive Foundation
+
+Project Gutenberg-tm depends upon and cannot survive without wide
+spread public support and donations to carry out its mission of
+increasing the number of public domain and licensed works that can be
+freely distributed in machine readable form accessible by the widest
+array of equipment including outdated equipment.  Many small donations
+($1 to $5,000) are particularly important to maintaining tax exempt
+status with the IRS.
+
+The Foundation is committed to complying with the laws regulating
+charities and charitable donations in all 50 states of the United
+States.  Compliance requirements are not uniform and it takes a
+considerable effort, much paperwork and many fees to meet and keep up
+with these requirements.  We do not solicit donations in locations
+where we have not received written confirmation of compliance.  To
+SEND DONATIONS or determine the status of compliance for any
+particular state visit http://pglaf.org
+
+While we cannot and do not solicit contributions from states where we
+have not met the solicitation requirements, we know of no prohibition
+against accepting unsolicited donations from donors in such states who
+approach us with offers to donate.
+
+International donations are gratefully accepted, but we cannot make
+any statements concerning tax treatment of donations received from
+outside the United States.  U.S. laws alone swamp our small staff.
+
+Please check the Project Gutenberg Web pages for current donation
+methods and addresses.  Donations are accepted in a number of other
+ways including checks, online payments and credit card donations.
+To donate, please visit: http://pglaf.org/donate
+
+
+Section 5.  General Information About Project Gutenberg-tm electronic
+works.
+
+Professor Michael S. Hart is the originator of the Project Gutenberg-tm
+concept of a library of electronic works that could be freely shared
+with anyone.  For thirty years, he produced and distributed Project
+Gutenberg-tm eBooks with only a loose network of volunteer support.
+
+
+Project Gutenberg-tm eBooks are often created from several printed
+editions, all of which are confirmed as Public Domain in the U.S.
+unless a copyright notice is included.  Thus, we do not necessarily
+keep eBooks in compliance with any particular paper edition.
+
+
+Most people start at our Web site which has the main PG search facility:
+
+     http://www.gutenberg.org
+
+This Web site includes information about Project Gutenberg-tm,
+including how to make donations to the Project Gutenberg Literary
+Archive Foundation, how to help produce our new eBooks, and how to
+subscribe to our email newsletter to hear about new eBooks.

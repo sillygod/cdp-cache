@@ -6,12 +6,11 @@
 
 :4000  {
 
-    # encode zstd gzip
+    encode zstd gzip
 
     reverse_proxy {
 
         to localhost:8080
-        header_up Host {http.reverse_proxy.upstream.host}
 
     }
 
