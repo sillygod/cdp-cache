@@ -1,6 +1,10 @@
 #+HTML: <a href="https://github.com/sillygod/cdp-cache/actions?query=workflow%3ACI"><img src="https://github.com/sillygod/cdp-cache/workflows/CI/badge.svg?branch=master" /></a>
 #+HTML: </div>
 
+#+HTML: <a href="https://www.codacy.com/manual/sillygod/cdp-cache?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=sillygod/cdp-cache&amp;utm_campaign=Badge_Grade"><img src="https://app.codacy.com/project/badge/Grade/43d801ba437a42419e479492eca72ee2" /></a>
+#+HTML: </div>
+
+
 #+HTML: <a href="https://goreportcard.com/report/github.com/sillygod/cdp-cache"><img src="https://goreportcard.com/badge/github.com/sillygod/cdp-cache" /></a>
 #+HTML: </div>
 
