@@ -109,7 +109,7 @@
   - [x] in memory cache (consider to use [[https://github.com/golang/groupcache][groupcache]])
   - [X] chache control expiration issue default will add 24 hours if no rule applied (in the cacheobject library)
   - [X] research about usagepool in the caddy2 (use global variable instead)
+  - [ ] purge cache entries
   - [ ] custom log format (currently only add zap logger to print info)
     Idealy, We can implement a custom log module.
   - [ ] more optimization..
-  - [ ] purge cache entries

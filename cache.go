@@ -26,7 +26,7 @@ import (
 var (
 	entries     []map[string][]*Entry
 	entriesLock []*sync.RWMutex
-	l           sync.Mutex
+	l           sync.RWMutex
 )
 
 // RuleMatcherType specifies the type of matching rule to cache.
@@ -410,25 +410,28 @@ func (h *HTTPCache) Get(key string, request *http.Request) (*Entry, bool) {
 }
 
 // Del purge the key immediately
-func (h *HTTPCache) Del(key string, request *http.Request) bool {
+func (h *HTTPCache) Del(key string, request *http.Request) error {
 	b := h.getBucketIndexForKey(key)
-	h.entriesLock[b].Lock()
-	defer h.entriesLock[b].Unlock()
-
+	h.entriesLock[b].RLock()
 	previousEntries, exists := h.entries[b][key]
+	h.entriesLock[b].RUnlock()
 
 	if !exists {
-		return true
+		return nil
 	}
 
 	// the schedule will clean the entry automatically
 	for _, entry := range previousEntries {
 		if entry.IsFresh() {
-			h.cleanEntry(entry)
+			err := h.cleanEntry(entry)
+			if err != nil {
+				caddy.Log().Named("http.handlers.http_cache").Error(fmt.Sprintf("clean entry error: %s", err.Error()))
+				return err
+			}
 		}
 	}
 
-	return true
+	return nil
 }
 
 // Put adds the entry in the cache
@@ -452,7 +455,7 @@ func (h *HTTPCache) Put(request *http.Request, entry *Entry) {
 	h.entries[bucket][key] = append(h.entries[bucket][key], entry)
 }
 
-func (h *HTTPCache) cleanEntry(entry *Entry) {
+func (h *HTTPCache) cleanEntry(entry *Entry) error {
 	key := entry.Key()
 	bucket := h.getBucketIndexForKey(key)
 
@@ -462,10 +465,11 @@ func (h *HTTPCache) cleanEntry(entry *Entry) {
 	for i, otherEntry := range h.entries[bucket][key] {
 		if entry == otherEntry {
 			h.entries[bucket][key] = append(h.entries[bucket][key][:i], h.entries[bucket][key][i+1:]...)
-			entry.Clean()
-			return
+			return entry.Clean()
 		}
 	}
+
+	return nil
 }
 
 func (h *HTTPCache) scheduleCleanEntry(entry *Entry) {
