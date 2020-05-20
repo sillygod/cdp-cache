@@ -28,10 +28,20 @@ var (
 		"path_prefix",
 		"mitm",
 	}
+
+	cache  *HTTPCache
+	config *Config
 )
 
 func init() {
 	caddy.RegisterModule(Handler{})
+}
+
+// getHandlerCache is a singleton of HTTPCache
+func getHandlerCache() *HTTPCache {
+	l.RLock()
+	defer l.RUnlock()
+	return cache
 }
 
 // Handler is a http handler as a middleware to cache the response
@@ -155,13 +165,19 @@ func (h *Handler) Provision(ctx caddy.Context) error {
 
 	}
 
-	h.Cache = NewHTTPCache(h.Config)
+	// NOTE: make cache global and implement a function to get it. Therefore, we can
+	// call its Del to purge the cache
+	cache = NewHTTPCache(h.Config)
+	h.Cache = cache
 	h.URLLocks = NewURLLock(h.Config)
 
 	err := backends.InitGroupCacheRes(h.Config.CacheMaxMemorySize)
 	if err != nil {
 		return err
 	}
+
+	// NOTE: a dirty work to assign the config to global
+	config = h.Config
 
 	return nil
 }
