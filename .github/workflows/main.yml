@@ -45,6 +45,7 @@ jobs:
       - name: docker build and push
         uses: docker/build-push-action@v1
         with:
+          dockerfile: build/ci.dockerfile
           registry: docker.pkg.github.com
           repository: sillygod/cdp-cache/caddy
           username: sillygod

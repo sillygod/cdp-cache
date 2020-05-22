@@ -409,8 +409,22 @@ func (h *HTTPCache) Get(key string, request *http.Request) (*Entry, bool) {
 	return nil, false
 }
 
+// Keys list the keys holded by this cache
+func (h *HTTPCache) Keys() []string {
+	keys := []string{}
+	for index, l := range h.entriesLock {
+		l.RLock()
+		for k := range h.entries[index] {
+			keys = append(keys, k)
+		}
+		l.RUnlock()
+	}
+
+	return keys
+}
+
 // Del purge the key immediately
-func (h *HTTPCache) Del(key string, request *http.Request) error {
+func (h *HTTPCache) Del(key string) error {
 	b := h.getBucketIndexForKey(key)
 	h.entriesLock[b].RLock()
 	previousEntries, exists := h.entries[b][key]

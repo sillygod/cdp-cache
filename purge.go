@@ -48,6 +48,12 @@ type PurgePayload struct {
 	query  string
 }
 
+func (p *PurgePayload) parseMethod() {
+	if p.Method == "" {
+		p.Method = "GET" // set GET as default
+	}
+}
+
 func (p *PurgePayload) parseURI() {
 	tokens := strings.Split(p.URI, "?")
 	if len(tokens) > 1 {
@@ -68,6 +74,7 @@ func (p *PurgePayload) pruneHost() {
 }
 
 func (p *PurgePayload) transform() {
+	p.parseMethod()
 	p.parseURI()
 	p.pruneHost()
 }
@@ -79,6 +86,22 @@ func (cachePurge) CaddyModule() caddy.ModuleInfo {
 		ID:  "admin.api.purge",
 		New: func() caddy.Module { return new(cachePurge) },
 	}
+}
+
+func (cachePurge) Purge(cacheHandler *HTTPCache, conds string) error {
+	// Regular expression will be a little slow.
+	// In fact, there will not be so many keys in real world case
+	// so I think this will not be the performance's bottleneck
+	keys := cache.Keys()
+	for _, k := range keys {
+		// TODO: implement a regular pattern match
+		err := cache.Del(k)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // Routes return a route for the /purge endpoint
@@ -131,10 +154,6 @@ func (cachePurge) handlePurge(w http.ResponseWriter, r *http.Request) error {
 	// find a way to produce the correspond key
 	// example key should be like "GET localhost/static/js/chunk-element.js?"
 	key := purgeRepl.ReplaceKnown(config.CacheKeyTemplate, "")
-	err = cache.Del(key, r)
-	if err != nil {
-		return err
-	}
 
 	return nil
 }
