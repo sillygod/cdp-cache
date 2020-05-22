@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"regexp"
 	"strings"
 	"sync"
 
@@ -93,11 +94,13 @@ func (cachePurge) Purge(cacheHandler *HTTPCache, conds string) error {
 	// In fact, there will not be so many keys in real world case
 	// so I think this will not be the performance's bottleneck
 	keys := cache.Keys()
+	r, _ := regexp.Compile(conds)
+
 	for _, k := range keys {
-		// TODO: implement a regular pattern match
-		err := cache.Del(k)
-		if err != nil {
-			return err
+		if r.MatchString(k) {
+			if err := cache.Del(k); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -108,14 +111,41 @@ func (cachePurge) Purge(cacheHandler *HTTPCache, conds string) error {
 func (c cachePurge) Routes() []caddy.AdminRoute {
 	return []caddy.AdminRoute{
 		{
-			Pattern: "/purge",
+			Pattern: "/caches/purge",
 			Handler: caddy.AdminHandlerFunc(c.handlePurge),
+		},
+		{
+			Pattern: "/caches",
+			Handler: caddy.AdminHandlerFunc(c.handleListCacheKeys),
 		},
 	}
 }
 
+func (c cachePurge) handleListCacheKeys(w http.ResponseWriter, r *http.Request) error {
+	if r.Method != http.MethodGet {
+		return caddy.APIError{
+			Code: http.StatusMethodNotAllowed,
+			Err:  fmt.Errorf("method not allowed"),
+		}
+	}
+
+	cache := getHandlerCache()
+	keys := cache.Keys()
+
+	w.Header().Set("Content-Type", "application/json")
+	err := json.NewEncoder(w).Encode(keys)
+	if err != nil {
+		return caddy.APIError{
+			Code: http.StatusBadRequest,
+			Err:  err,
+		}
+	}
+
+	return nil
+}
+
 // handlePurge purges the cache matched the provided conditions
-func (cachePurge) handlePurge(w http.ResponseWriter, r *http.Request) error {
+func (c cachePurge) handlePurge(w http.ResponseWriter, r *http.Request) error {
 	if r.Method != http.MethodDelete {
 		return caddy.APIError{
 			Code: http.StatusMethodNotAllowed,
@@ -134,6 +164,7 @@ func (cachePurge) handlePurge(w http.ResponseWriter, r *http.Request) error {
 			Err:  fmt.Errorf("reading request body: %s", err.Error()),
 		}
 	}
+
 	// pass the body's content to the Del
 	body := buf.Bytes()
 	payload := &PurgePayload{}
@@ -151,9 +182,10 @@ func (cachePurge) handlePurge(w http.ResponseWriter, r *http.Request) error {
 	purgeRepl.Set("http.request.uri.path", payload.path)
 
 	cache := getHandlerCache()
-	// find a way to produce the correspond key
 	// example key should be like "GET localhost/static/js/chunk-element.js?"
-	key := purgeRepl.ReplaceKnown(config.CacheKeyTemplate, "")
+	i := strings.Index(config.CacheKeyTemplate, "?")
+	escapedKeyTmpl := config.CacheKeyTemplate[:i] + "\\" + config.CacheKeyTemplate[i:]
 
-	return nil
+	conds := purgeRepl.ReplaceKnown(escapedKeyTmpl, "")
+	return c.Purge(cache, conds)
 }

@@ -414,8 +414,10 @@ func (h *HTTPCache) Keys() []string {
 	keys := []string{}
 	for index, l := range h.entriesLock {
 		l.RLock()
-		for k := range h.entries[index] {
-			keys = append(keys, k)
+		for k, v := range h.entries[index] {
+			if len(v) != 0 {
+				keys = append(keys, k)
+			}
 		}
 		l.RUnlock()
 	}
