@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	github.com/caddyserver/caddy/v2 v2.0.0
+	github.com/go-redis/redis v6.15.8+incompatible
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e
 	github.com/pomerium/autocache v0.0.0-20200505053831-8c1cd659f055
 	github.com/pquerna/cachecontrol v0.0.0-20180517163645-1555304b9b35

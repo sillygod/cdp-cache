@@ -87,22 +87,26 @@ func (i *InMemoryBackend) Write(p []byte) (n int, err error) {
 	return i.content.Write(p)
 }
 
+// Flush do nothing here
 func (i *InMemoryBackend) Flush() error {
 	return nil
 }
 
+// Clean performs the purge storage
 func (i *InMemoryBackend) Clean() error {
 	// NOTE: there is no way to del or update the cache in groupcache
 	// Therefore, I use the cache invalidation instead.
 	return nil
 }
 
+// Close writeh the temp buffer's content to the groupcache
 func (i *InMemoryBackend) Close() error {
 	i.Ctx = context.WithValue(i.Ctx, getterCtxKey, i.content.Bytes())
 	err := groupch.Get(i.Ctx, i.Key, groupcache.AllocatingByteSliceSink(&i.cachedBytes))
 	return err
 }
 
+// GetReader return a reader for the write public response
 func (i *InMemoryBackend) GetReader() (io.ReadCloser, error) {
 	if len(i.cachedBytes) == 0 {
 		err := groupch.Get(i.Ctx, i.Key, groupcache.AllocatingByteSliceSink(&i.cachedBytes))
