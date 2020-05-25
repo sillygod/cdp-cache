@@ -42,6 +42,7 @@ func (f *FileBackend) Flush() error {
 	return f.file.Sync()
 }
 
+// Clean performs the purge storage
 func (f *FileBackend) Clean() error {
 	f.subscription.WaitAll()
 	return os.Remove(f.file.Name())

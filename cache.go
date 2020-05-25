@@ -292,6 +292,7 @@ func (e *Entry) Clean() error {
 }
 
 func (e *Entry) writePublicResponse(w http.ResponseWriter) error {
+	// TODO: Maybe we can redesign here to get a better performance
 	reader, err := e.Response.GetReader()
 
 	if err != nil {
@@ -335,6 +336,8 @@ func (e *Entry) setBackend(ctx context.Context, config *Config) error {
 		backend, err = backends.NewFileBackend(config.Path)
 	case inMemory:
 		backend, err = backends.NewInMemoryBackend(ctx, e.key, e.expiration)
+	case redis:
+		backend, err = backends.NewRedisBackend(ctx, e.key, e.expiration)
 	}
 
 	e.Response.SetBody(backend)

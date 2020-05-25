@@ -165,18 +165,31 @@ func (h *Handler) Provision(ctx caddy.Context) error {
 
 	}
 
-	// NOTE: make cache global and implement a function to get it. Therefore, we can
-	// call its Del to purge the cache
+	// NOTE: A dirty work to assign the config and cache to global vars
+	// There will be the corresponding functions to get each of them.
+	// Therefore, we can call its Del to purge the cache via the admin interface
 	cache = NewHTTPCache(h.Config)
 	h.Cache = cache
 	h.URLLocks = NewURLLock(h.Config)
 
-	err := backends.InitGroupCacheRes(h.Config.CacheMaxMemorySize)
-	if err != nil {
-		return err
+	// Some type of the backends need extra initialization.
+	switch h.Config.Type {
+	case inMemory:
+		if err := backends.InitGroupCacheRes(h.Config.CacheMaxMemorySize); err != nil {
+			return err
+		}
+
+	case redis:
+		opts, err := backends.ParRedisConfig(h.Config.RedisConnectionSetting)
+		if err != nil {
+			return err
+		}
+
+		if err := backends.InitRedisClient(opts.Addr, opts.Password, opts.DB); err != nil {
+			return err
+		}
 	}
 
-	// NOTE: a dirty work to assign the config to global
 	config = h.Config
 
 	return nil
@@ -189,7 +202,6 @@ func (h *Handler) Validate() error {
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhttp.Handler) error {
-
 	// add a log here to record the elapsed time (from receiving the request to send the response)
 	start := time.Now()
 	upstreamDuration := time.Duration(0)

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
@@ -32,28 +33,33 @@ const (
 )
 
 var (
-	defaultStatusHeader       = "X-Cache-Status"
-	defaultLockTimeout        = time.Duration(5) * time.Minute
-	defaultMaxAge             = time.Duration(5) * time.Minute
-	defaultPath               = ""
-	defaultCacheType          = file
-	defaultcacheBucketsNum    = 256
-	defaultCacheMaxMemorySize = GB // default is 1 GB
-	defaultCacheKeyTemplate   = "{http.request.method} {http.request.host}{http.request.uri.path}?{http.request.uri.query}"
+	defaultStatusHeader           = "X-Cache-Status"
+	defaultLockTimeout            = time.Duration(5) * time.Minute
+	defaultMaxAge                 = time.Duration(5) * time.Minute
+	defaultPath                   = ""
+	defaultCacheType              = file
+	defaultcacheBucketsNum        = 256
+	defaultCacheMaxMemorySize     = GB // default is 1 GB
+	defaultRedisConnectionSetting = "localhost:6379 0"
+	defaultCacheKeyTemplate       = "{http.request.method} {http.request.host}{http.request.uri.path}?{http.request.uri.query}"
 	// the key is refereced from github.com/caddyserver/caddy/v2/modules/caddyhttp.addHTTPVarsToReplacer
 )
 
 const (
-	keyStatusHeader       = "status_header"
-	keyLockTimeout        = "lock_timeout"
-	keyDefaultMaxAge      = "default_max_age"
-	keyPath               = "path"
-	keyMatchHeader        = "match_header"
-	keyMatchPath          = "match_path"
-	keyCacheKey           = "cache_key"
-	keyCacheBucketsNum    = "cache_bucket_num"
-	keyCacheMaxMemorySzie = "cache_max_memory_size"
-	keyCacheType          = "cache_type"
+	keyStatusHeader          = "status_header"
+	keyLockTimeout           = "lock_timeout"
+	keyDefaultMaxAge         = "default_max_age"
+	keyPath                  = "path"
+	keyMatchHeader           = "match_header"
+	keyMatchPath             = "match_path"
+	keyCacheKey              = "cache_key"
+	keyCacheBucketsNum       = "cache_bucket_num"
+	keyCacheMaxMemorySzie    = "cache_max_memory_size"
+	keyCacheType             = "cache_type"
+	keyRedisConnctionSetting = "redis_connection_setting"
+	// format: addr db password or addr db or addr
+	// ex.
+	// localhost:6789 0 => connect without password. only index and host:port provided
 )
 
 func init() {
@@ -62,30 +68,32 @@ func init() {
 
 // Config is the configuration for cache process
 type Config struct {
-	Type               CacheType                `json:"type,omitempty"`
-	StatusHeader       string                   `json:"status_header,omitempty"`
-	DefaultMaxAge      time.Duration            `json:"default_max_age,omitempty"`
-	LockTimeout        time.Duration            `json:"lock_timeout,omitempty"`
-	RuleMatchersRaws   []RuleMatcherRawWithType `json:"rule_matcher_raws,omitempty"`
-	RuleMatchers       []RuleMatcher            `json:"-"`
-	CacheBucketsNum    int                      `json:"cache_buckets_num,omitempty"`
-	CacheMaxMemorySize int                      `json:"cache_max_memory_size,omitempty"`
-	Path               string                   `json:"path,omitempty"`
-	CacheKeyTemplate   string                   `json:"cache_key_template,omitempty"`
+	Type                   CacheType                `json:"type,omitempty"`
+	StatusHeader           string                   `json:"status_header,omitempty"`
+	DefaultMaxAge          time.Duration            `json:"default_max_age,omitempty"`
+	LockTimeout            time.Duration            `json:"lock_timeout,omitempty"`
+	RuleMatchersRaws       []RuleMatcherRawWithType `json:"rule_matcher_raws,omitempty"`
+	RuleMatchers           []RuleMatcher            `json:"-"`
+	CacheBucketsNum        int                      `json:"cache_buckets_num,omitempty"`
+	CacheMaxMemorySize     int                      `json:"cache_max_memory_size,omitempty"`
+	Path                   string                   `json:"path,omitempty"`
+	CacheKeyTemplate       string                   `json:"cache_key_template,omitempty"`
+	RedisConnectionSetting string                   `json:"redis_connection_setting,omitempty"`
 }
 
 func getDefaultConfig() *Config {
 	return &Config{
-		StatusHeader:       defaultStatusHeader,
-		DefaultMaxAge:      defaultMaxAge,
-		LockTimeout:        defaultLockTimeout,
-		RuleMatchersRaws:   []RuleMatcherRawWithType{},
-		RuleMatchers:       []RuleMatcher{},
-		CacheBucketsNum:    defaultcacheBucketsNum,
-		CacheMaxMemorySize: defaultCacheMaxMemorySize,
-		Path:               defaultPath,
-		Type:               defaultCacheType,
-		CacheKeyTemplate:   defaultCacheKeyTemplate,
+		StatusHeader:           defaultStatusHeader,
+		DefaultMaxAge:          defaultMaxAge,
+		LockTimeout:            defaultLockTimeout,
+		RuleMatchersRaws:       []RuleMatcherRawWithType{},
+		RuleMatchers:           []RuleMatcher{},
+		CacheBucketsNum:        defaultcacheBucketsNum,
+		CacheMaxMemorySize:     defaultCacheMaxMemorySize,
+		Path:                   defaultPath,
+		Type:                   defaultCacheType,
+		CacheKeyTemplate:       defaultCacheKeyTemplate,
+		RedisConnectionSetting: defaultRedisConnectionSetting,
 	}
 }
 
@@ -127,6 +135,12 @@ func (h *Handler) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 					return d.Err("Invalid usage of status_header in cache config.")
 				}
 				config.StatusHeader = args[0]
+
+			case keyRedisConnctionSetting:
+				if len(args) > 3 {
+					return d.Err("Invalid usage of redis_connection_setting in cache config.")
+				}
+				config.RedisConnectionSetting = strings.Join(args, " ")
 
 			case keyCacheType:
 				if len(args) != 1 {
