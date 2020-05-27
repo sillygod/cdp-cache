@@ -64,8 +64,9 @@ func (h *Handler) respond(w http.ResponseWriter, entry *Entry, cacheStatus strin
 	// w.WriteHeader(entry.Response.Code)
 	err := entry.WriteBodyTo(w)
 	if err != nil {
+		h.logger.Error("cache handler", zap.Error(err))
+		w.WriteHeader(entry.Response.Code)
 		debug.PrintStack()
-		fmt.Printf("respond err: %v", err)
 	}
 	return err
 }
@@ -74,11 +75,13 @@ func popOrNil(h *Handler, errChan chan error) (err error) {
 	select {
 	case err := <-errChan:
 		if err != nil {
-			h.logger.Error(err.Error())
+			h.logger.Error(fmt.Sprintf("popOrNil: %s", err.Error()))
 		}
+		return err
 	default:
+		return nil
 	}
-	return
+
 }
 
 func (h *Handler) fetchUpstream(req *http.Request, next caddyhttp.Handler) (*Entry, error) {
@@ -180,7 +183,7 @@ func (h *Handler) Provision(ctx caddy.Context) error {
 		}
 
 	case redis:
-		opts, err := backends.ParRedisConfig(h.Config.RedisConnectionSetting)
+		opts, err := backends.ParseRedisConfig(h.Config.RedisConnectionSetting)
 		if err != nil {
 			return err
 		}
