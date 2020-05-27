@@ -11,10 +11,50 @@
 
 * Caddy Http Cache
 
-  This is a http cache plugin for caddy 2. In fact, I am not familiar with the mechanism of the cdn cache so I borrow the code from https://github.com/nicolasazrak/caddy-cache. which is the caddy v1's cache module. Then, I migrate the codebase to be consist with the caddy2 architecture, do some change, and implement more feature for it.
+  This is a http cache plugin for caddy 2. In fact, I am not so familiar with the part of cdn cache's mechanism so I reference the code from https://github.com/nicolasazrak/caddy-cache. which is the caddy v1's cache module. Then, I migrate the codebase to be consist with the caddy2 architecture and develop more features based on that.
 
-  Currently, this is under development so it will change frequently.
+  Currently, this doesn't support =distributed cache= yet. It's still in plain.
 
+* Features
+ 
+** Multi storage backends support
+   Now the following backends are supported.
+   
+   - file
+   - inmemory
+   - redis
+   
+   In the latter part, I will show the example Caddyfile to serve different type of proxy cache server.
+   
+** Conditional rule to cache the upstream response
+   - uri path matcher
+   - http header matcher
+
+** Set default cache's max age
+   A default age for matched responses that do not have an explicit expiration.
+** Purge cache 
+   There are exposed endpoints to purge cache. I implement it with admin apis endpoints. The following will show you how to purge cache
+   
+*** first you can list the current caches
+    
+    #+begin_src restclient
+      GET http://example.com/caches
+    #+end_src
+
+*** purge the cache with http DELETE request
+    
+    #+begin_src restclient
+      DELETE http://:host/caches/purge
+      Content-Type: application/json
+
+      {
+      "method": "GET",
+      "host": "localhost",
+      "uri": ".*\\.txt"
+      }
+    #+end_src
+
+    
 * How to build
 
   In development, go to the cmd folder and type the following commands.
@@ -55,37 +95,36 @@
   
   The following will list current support configs in the caddyfile.
 
-** status_header
-   The header to set cache status. default value: =X-Cache-Status=
+*** status_header
+    The header to set cache status. default value: =X-Cache-Status=
 
-** match_path
-   Only the request's path match the condition will be cached. Ex. =/= means all request need to be cached because all request's path must start with =/=
+*** match_path
+    Only the request's path match the condition will be cached. Ex. =/= means all request need to be cached because all request's path must start with =/=
 
-** default_max_age
-   The cache's expiration time.
+*** default_max_age
+    The cache's expiration time.
 
-** match_header
-   only the req's header match the condtions 
+*** match_header
+    only the req's header match the condtions 
 
-** path
-   The position where to save the file. Only applied when the =cache_type= is =file=.
+*** path
+    The position where to save the file. Only applied when the =cache_type= is =file=.
 
-** cache_key
-   The key of cache entry. The default value is ={http.request.method} {http.request.host}{http.request.uri.path}?{http.request.uri.query}=
+*** cache_key
+    The key of cache entry. The default value is ={http.request.method} {http.request.host}{http.request.uri.path}?{http.request.uri.query}=
 
-** cache_bucket_num
-   The bucket number of the mod of cache_key's checksum. The default value is 256.
+*** cache_bucket_num
+    The bucket number of the mod of cache_key's checksum. The default value is 256.
 
-** cache_type
-   Indicate to use which kind of cache's storage backend. Currently, there are two choices. One is =file= and the other is =in_memory=
+*** cache_type
+    Indicate to use which kind of cache's storage backend. Currently, there are two choices. One is =file= and the other is =in_memory=
    
-** cache_max_memory_size
-   The max memory usage for in_memory backend.
+*** cache_max_memory_size
 
-* Deployment
-  
-  In progress, currently I add github action to auto build the executable for linux platform and also the docker images.
-
+    The max memory usage for in_memory backend.
+   
+** Example configs
+   You can go to the directory [[file:example/redis_cache/][examples]]. It shows you each type of cache's configuration.
 
 * Benchmarks
   
@@ -96,20 +135,17 @@
 
 ** Test Result
 
-  The following benchmark is analysized by =wrk -c 200 -d 30s --latency -t 4 http://localhost:9992/test.jpg=
-  the file size is 100KB
+   The following benchmark is analysized by =wrk -c 50 -d 30s --latency -t 4 http://localhost:9991/pg31674.txt=
+   the file size is 100KB
   
-  |                         | req/s | latency (50% 90% 99%)        |
-  | proxy + file cache      | 10233 | 18.24ms /  22.56ms / 33.34ms |
-  | proxy + in memory cache | 15810 | 12.55ms /  14.09ms / 22.88ms |
+   |                         | req/s | latency (50% 90% 99%)     |
+   | proxy + file cache      | 13853 | 3.29ms /  4.09ms / 5.26ms |
+   | proxy + in memory cache | 20622 | 2.20ms /  3.03ms / 4.68ms |
 
   
 * Todo list
   
-  - [x] in memory cache (consider to use [[https://github.com/golang/groupcache][groupcache]])
-  - [X] chache control expiration issue default will add 24 hours if no rule applied (in the cacheobject library)
-  - [X] research about usagepool in the caddy2 (use global variable instead)
-  - [ ] purge cache entries
   - [ ] custom log format (currently only add zap logger to print info)
     Idealy, We can implement a custom log module.
+  - [ ] distributed cache
   - [ ] more optimization..

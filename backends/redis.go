@@ -24,15 +24,13 @@ type RedisBackend struct {
 	expiration time.Time
 }
 
-func ParRedisConfig(connSetting string) (*redis.Options, error) {
+// ParseRedisConfig prases the connection settings string from the caddyfile
+func ParseRedisConfig(connSetting string) (*redis.Options, error) {
 	var err error
-	addr, password, db := "localhost:6379", "", 0
-
 	args := strings.Split(connSetting, " ")
+	addr, password, db := args[0], "", 0
 	length := len(args)
 	// the format of args: addr db password
-
-	addr = args[0]
 
 	if length > 1 {
 		db, err = strconv.Atoi(args[1])

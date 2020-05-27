@@ -1,0 +1,26 @@
+{
+    order http_cache before reverse_proxy
+}
+
+:9991 {
+    reverse_proxy {
+        to localhost:9995
+    }
+
+    http_cache {
+        cache_type redis 
+        redis_connection_setting localhost:6379
+        match_path /
+    }
+}
+
+
+:9995 {
+    header Cache-control "public"
+    root * /tmp/caddy-benchmark
+    file_server
+
+    log {
+        level info
+    }
+}
