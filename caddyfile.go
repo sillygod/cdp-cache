@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/caddyserver/caddy/v2"
+	"github.com/caddyserver/caddy/v2/caddyconfig"
 	"github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
 	"github.com/caddyserver/caddy/v2/caddyconfig/httpcaddyfile"
 	"github.com/caddyserver/caddy/v2/modules/caddyhttp"
@@ -60,6 +62,7 @@ const (
 	// format: addr db password or addr db or addr
 	// ex.
 	// localhost:6789 0 => connect without password. only index and host:port provided
+	keyDistributed = "distributed"
 )
 
 func init() {
@@ -118,6 +121,11 @@ func parseCaddyfile(h httpcaddyfile.Helper) (caddyhttp.MiddlewareHandler, error)
 //         status_header X-Cache-Status
 //         default_max_age 15m
 //         path /tmp/caddy-cache
+//
+//         distributed consul {
+//             service_name
+//             addr
+//         }
 //     }
 // }
 func (h *Handler) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
@@ -217,6 +225,29 @@ func (h *Handler) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 					return d.Err(fmt.Sprintf("Invalid usage of %s, %s", keyCacheBucketsNum, err.Error()))
 				}
 				config.CacheBucketsNum = num
+
+			case keyDistributed:
+				if len(args) != 1 {
+					return d.Err(fmt.Sprintf("Invalid usage of %s in cache config.", keyDistributed))
+				}
+				solution := args[0]
+
+				mod, err := caddy.GetModule("distributed." + solution)
+				if err != nil {
+					return d.Errf("getting distributed module '%s': '%v'", mod, err)
+				}
+
+				unm, ok := mod.New().(caddyfile.Unmarshaler)
+				if !ok {
+					return d.Errf("distributed module '%s' is not a Caddfile unmarshaler", mod)
+				}
+
+				err = unm.UnmarshalCaddyfile(d.NewFromNextSegment())
+				if err != nil {
+					return err
+				}
+
+				h.DistributedRaw = caddyconfig.JSONModuleObject(unm, "distributed", "consul", nil)
 
 			default:
 				return d.Err("Unknown cache parameter: " + parameter)

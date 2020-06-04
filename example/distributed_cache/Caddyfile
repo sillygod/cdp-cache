@@ -10,6 +10,11 @@
     http_cache {
         cache_type in_memory 
         match_path /
+
+        distributed consul {
+            service_name "cache_server"
+            addr "localhost:8500"
+        }
     }
 }
 

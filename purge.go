@@ -111,6 +111,10 @@ func (cachePurge) Purge(cacheHandler *HTTPCache, conds string) error {
 func (c cachePurge) Routes() []caddy.AdminRoute {
 	return []caddy.AdminRoute{
 		{
+			Pattern: "/health",
+			Handler: caddy.AdminHandlerFunc(health),
+		},
+		{
 			Pattern: "/caches/purge",
 			Handler: caddy.AdminHandlerFunc(c.handlePurge),
 		},
@@ -119,6 +123,12 @@ func (c cachePurge) Routes() []caddy.AdminRoute {
 			Handler: caddy.AdminHandlerFunc(c.handleListCacheKeys),
 		},
 	}
+}
+
+func health(w http.ResponseWriter, r *http.Request) error {
+	w.WriteHeader(200)
+	w.Write([]byte(`OK`))
+	return nil
 }
 
 func (c cachePurge) handleListCacheKeys(w http.ResponseWriter, r *http.Request) error {

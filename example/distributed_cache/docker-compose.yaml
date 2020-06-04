@@ -1,0 +1,32 @@
+
+version: "3.7"
+
+
+codebase:
+  image: tianon/true
+  container_name: codebase
+  volumes:
+    - .:${PROJECT_PATH}
+
+
+services:
+  consul:
+    image: consul
+    command: "agent -dev -client 0.0.0.0"
+    ports:
+      - "8300:8300"
+      - "8500:8500"
+
+  cdp:
+    image: golang:1.14.2
+    container_name: cdp
+    volumes_from:
+      - codebase
+    command: >-
+      sh -c "echo 'spin up caddy proxy cache...' &&
+             go run $PROJECT_PATH/cmd/main.go --config example/distributed_cache/Caddfile"
+    environment:
+      - PROJECT_PATH=${PROJECT_PATH}
+    depends_on:
+      - consul
+    
