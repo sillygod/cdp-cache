@@ -20,6 +20,10 @@
         match_path /
         path /tmp/cache
 
+        distributed consul {
+           
+        }
+
     }
 
     log {

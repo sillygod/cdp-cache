@@ -1,0 +1,39 @@
+
+version: "3.7"
+
+services:
+  consul:
+    image: consul
+    command: "agent -dev -client 0.0.0.0"
+    ports:
+      - "8300:8300"
+      - "8500:8500"
+
+  cdp: &cdp-source
+    image: golang:1.14.2
+    container_name: cdp
+    volumes:
+      - cdp:/go/
+      - go-build-cache:/root/.cache/go-build
+      - .:${PROJECT_PATH}
+    command: >
+      sh -c "echo 'spin up caddy proxy cache...' &&
+      cd ${PROJECT_PATH} &&
+      go run $PROJECT_PATH/cmd/main.go run --config example/distributed_cache/Caddyfile"
+    environment:
+      - PROJECT_PATH=${PROJECT_PATH}
+    depends_on:
+      - consul
+
+  cdp2:
+    <<: *cdp-source
+    container_name: cdp2
+
+    
+volumes:
+  cdp:
+  go-build-cache:
+
+# PROJECT_PATH=/app docker-compose --project-directory=./ -f example/distributed_cache/docker-compose.yaml up
+
+      

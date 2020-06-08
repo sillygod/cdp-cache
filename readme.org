@@ -53,8 +53,16 @@
       "uri": ".*\\.txt"
       }
     #+end_src
-
-    
+** Support cluster with consul
+   
+   NOTE: still under development.
+   
+   I've provided a simple example to mimic a cluster environment.
+   
+   #+begin_src sh
+     PROJECT_PATH=/app docker-compose --project-directory=./ -f example/distributed_cache/docker-compose.yaml up
+   #+end_src
+   
 * How to build
 
   In development, go to the cmd folder and type the following commands.

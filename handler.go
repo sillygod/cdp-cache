@@ -12,6 +12,7 @@ import (
 	"github.com/caddyserver/caddy/v2"
 	"github.com/caddyserver/caddy/v2/modules/caddyhttp"
 	"github.com/sillygod/cdp-cache/backends"
+	"github.com/sillygod/cdp-cache/extends/distributed"
 	"go.uber.org/zap"
 )
 
@@ -49,7 +50,11 @@ type Handler struct {
 	Config   *Config    `json:"config,omitempty"`
 	Cache    *HTTPCache `json:"-"`
 	URLLocks *URLLock   `json:"-"`
-	logger   *zap.Logger
+
+	DistributedRaw json.RawMessage           `json:"distributed,omitempty" caddy:"namespace=distributed inline_key=distributed"`
+	Distributed    distributed.ConsulService `json:"-"`
+
+	logger *zap.Logger
 }
 
 func (h *Handler) addStatusHeaderIfConfigured(w http.ResponseWriter, status string) {
@@ -193,6 +198,16 @@ func (h *Handler) Provision(ctx caddy.Context) error {
 		}
 	}
 
+	// load the guest module distributed
+	if h.DistributedRaw != nil {
+		val, err := ctx.LoadModule(h, "DistributedRaw") // this will call provision
+		if err != nil {
+			return fmt.Errorf("loading distributed module: %s", err.Error())
+		}
+		h.Distributed = *val.(*distributed.ConsulService)
+
+	}
+
 	config = h.Config
 
 	return nil
@@ -201,6 +216,11 @@ func (h *Handler) Provision(ctx caddy.Context) error {
 // Validate validates httpcache's configuration.
 func (h *Handler) Validate() error {
 
+	return nil
+}
+
+func (h *Handler) Cleanup() error {
+	// NOTE: release the resources
 	return nil
 }
 

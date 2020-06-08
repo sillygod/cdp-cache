@@ -1,5 +1,7 @@
 {
     order http_cache before reverse_proxy
+    admin 0.0.0.0:7777
+
 }
 
 :9991 {
@@ -10,6 +12,12 @@
     http_cache {
         cache_type in_memory 
         match_path /
+
+        distributed consul {
+            service_name "cache_server"
+            addr "consul:8500"
+            health_check ":7777/health"
+        }
     }
 }
 
