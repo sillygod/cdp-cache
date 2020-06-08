@@ -7,6 +7,7 @@ require (
 	github.com/caddyserver/caddy/v2 v2.0.0
 	github.com/go-redis/redis v6.15.8+incompatible
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e
+	github.com/google/uuid v1.1.1
 	github.com/hashicorp/consul v1.7.3
 	github.com/hashicorp/consul/api v1.4.0
 	github.com/hashicorp/go-hclog v0.14.1 // indirect

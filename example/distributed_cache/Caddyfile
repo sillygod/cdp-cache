@@ -1,5 +1,7 @@
 {
     order http_cache before reverse_proxy
+    admin 0.0.0.0:7777
+
 }
 
 :9991 {
@@ -13,7 +15,8 @@
 
         distributed consul {
             service_name "cache_server"
-            addr "localhost:8500"
+            addr "consul:8500"
+            health_check ":7777/health"
         }
     }
 }

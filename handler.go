@@ -200,15 +200,12 @@ func (h *Handler) Provision(ctx caddy.Context) error {
 
 	// load the guest module distributed
 	if h.DistributedRaw != nil {
-		val, err := ctx.LoadModule(h, "DistributedRaw")
+		val, err := ctx.LoadModule(h, "DistributedRaw") // this will call provision
 		if err != nil {
 			return fmt.Errorf("loading distributed module: %s", err.Error())
 		}
 		h.Distributed = *val.(*distributed.ConsulService)
-		// err = h.Distributed.Provision(ctx)
-		// if err != nil {
-		// 	return err
-		// }
+
 	}
 
 	config = h.Config

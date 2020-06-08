@@ -1,14 +1,6 @@
 
 version: "3.7"
 
-
-codebase:
-  image: tianon/true
-  container_name: codebase
-  volumes:
-    - .:${PROJECT_PATH}
-
-
 services:
   consul:
     image: consul
@@ -17,16 +9,31 @@ services:
       - "8300:8300"
       - "8500:8500"
 
-  cdp:
+  cdp: &cdp-source
     image: golang:1.14.2
     container_name: cdp
-    volumes_from:
-      - codebase
-    command: >-
+    volumes:
+      - cdp:/go/
+      - go-build-cache:/root/.cache/go-build
+      - .:${PROJECT_PATH}
+    command: >
       sh -c "echo 'spin up caddy proxy cache...' &&
-             go run $PROJECT_PATH/cmd/main.go --config example/distributed_cache/Caddfile"
+      cd ${PROJECT_PATH} &&
+      go run $PROJECT_PATH/cmd/main.go run --config example/distributed_cache/Caddyfile"
     environment:
       - PROJECT_PATH=${PROJECT_PATH}
     depends_on:
       - consul
+
+  cdp2:
+    <<: *cdp-source
+    container_name: cdp2
+
     
+volumes:
+  cdp:
+  go-build-cache:
+
+# PROJECT_PATH=/app docker-compose --project-directory=./ -f example/distributed_cache/docker-compose.yaml up
+
+      

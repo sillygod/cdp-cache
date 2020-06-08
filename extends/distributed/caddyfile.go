@@ -4,10 +4,17 @@ import (
 	"github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
 )
 
+const (
+	keyServiceName = "service_name"
+	keyAddr        = "addr"
+	keyHealthCheck = "health_check"
+)
+
 // Config is the configuration for the consul
 type Config struct {
 	ServiceName string `json:"service_name,omitempty"`
 	Addr        string `json:"addr,omitempty"`
+	HealthURL   string `json:"health_url,omitempty"`
 }
 
 func getDefaultConfig() *Config {
@@ -32,14 +39,17 @@ func (c *ConsulService) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 			args := d.RemainingArgs()
 
 			switch parameter {
-			case "addr":
+			case keyAddr:
 				config.Addr = args[0]
 
-			case "service_name":
+			case keyServiceName:
 				config.ServiceName = args[0]
 
+			case keyHealthCheck:
+				config.HealthURL = args[0]
+
 			default:
-				return d.Errf("unrecognized subdirective %s", d.Val())
+				return d.Errf("unrecognized subdirective %s", parameter)
 
 			}
 		}
