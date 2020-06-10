@@ -42,15 +42,16 @@
     #+end_src
 
 *** purge the cache with http DELETE request
+    It supports the regular expression.
     
     #+begin_src restclient
       DELETE http://:host/caches/purge
       Content-Type: application/json
 
       {
-      "method": "GET",
-      "host": "localhost",
-      "uri": ".*\\.txt"
+        "method": "GET" ,
+        "host": "localhost",
+        "uri": ".*\\.txt"
       }
     #+end_src
 ** Support cluster with consul
@@ -150,7 +151,6 @@
    | proxy + file cache      | 13853 | 3.29ms /  4.09ms / 5.26ms |
    | proxy + in memory cache | 20622 | 2.20ms /  3.03ms / 4.68ms |
 
-  
 * Todo list
   
   - [ ] custom log format (currently only add zap logger to print info)

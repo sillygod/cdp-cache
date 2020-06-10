@@ -34,6 +34,10 @@ type InMemoryBackend struct {
 	cachedBytes []byte
 }
 
+func GetAutoCache() *autocache.Autocache {
+	return atch
+}
+
 // InitGroupCacheRes init the resources for groupcache
 // init this in the handler provision stage.
 func InitGroupCacheRes(maxSize int) error {

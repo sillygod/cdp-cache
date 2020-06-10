@@ -2,16 +2,15 @@
 {
     # debug
     order http_cache before reverse_proxy
+    admin 0.0.0.0:7777
 }
 
-:4000  {
+:9991  {
 
     encode zstd gzip
 
     reverse_proxy {
-
-        to localhost:8080
-
+        to localhost:9995
     }
 
     http_cache {
@@ -21,7 +20,9 @@
         path /tmp/cache
 
         distributed consul {
-           
+           service_name "cache_server"
+            addr "127.0.0.1:8500"
+            health_check ":7777/health"
         }
 
     }
@@ -36,6 +37,16 @@
     #    output file /var/logs/caddy/access.log
     #    format single_field common_log
     #}
+}
+
+:9995 {
+    header Cache-control "public"
+    root * /tmp/caddy-benchmark
+    file_server
+
+    log {
+        level info
+    }
 }
 
 
