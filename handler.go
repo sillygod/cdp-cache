@@ -119,7 +119,7 @@ func (h *Handler) fetchUpstream(req *http.Request, next caddyhttp.Handler) (*Ent
 
 		upstreamError := next.ServeHTTP(response, updatedReq)
 		errChan <- upstreamError
-		response.Close()
+		defer response.Close()
 
 	}(req, response)
 

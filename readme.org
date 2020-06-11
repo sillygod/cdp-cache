@@ -87,6 +87,11 @@
   #+begin_src sh
     xcaddy run --config cmd/Caddyfile
   #+end_src
+  
+  To remove unused dependencies
+  #+begin_src sh
+    go mod tidy
+  #+end_src
 
 * How to run
 

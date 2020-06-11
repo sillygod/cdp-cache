@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/caddyserver/caddy/v2"
 	"github.com/golang/groupcache"
 	"github.com/pomerium/autocache"
 )
@@ -113,6 +114,11 @@ func (i *InMemoryBackend) Clean() error {
 func (i *InMemoryBackend) Close() error {
 	i.Ctx = context.WithValue(i.Ctx, getterCtxKey, i.content.Bytes())
 	err := groupch.Get(i.Ctx, i.Key, groupcache.AllocatingByteSliceSink(&i.cachedBytes))
+	if err != nil {
+		caddy.Log().Named("backend:memory").Error(err.Error())
+	}
+
+	caddy.Log().Named("backend:memory").Info("enter")
 	return err
 }
 

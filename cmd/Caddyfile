@@ -7,8 +7,6 @@
 
 :9991  {
 
-    encode zstd gzip
-
     reverse_proxy {
         to localhost:9995
     }

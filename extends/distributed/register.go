@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/caddyserver/caddy/v2"
-	"github.com/google/uuid"
 	"github.com/hashicorp/consul/api"
 	"github.com/sillygod/cdp-cache/backends"
 )
@@ -103,14 +102,13 @@ func (c *ConsulService) Provision(ctx caddy.Context) error {
 	c.Catalog = c.Client.Catalog()
 	c.KV = c.Client.KV()
 
-	id := uuid.New()
-	idStr := id.String()
-	c.ServiceIDs = append(c.ServiceIDs, idStr)
-
 	ip, err := ipAddr()
 	if err != nil {
 		return err
 	}
+
+	idStr := "cache_server:" + ip.String()
+	c.ServiceIDs = append(c.ServiceIDs, idStr)
 
 	healthURL := fmt.Sprintf("http://%s%s", ip.String(), c.Config.HealthURL)
 
@@ -122,8 +120,8 @@ func (c *ConsulService) Provision(ctx caddy.Context) error {
 		Check: &api.AgentServiceCheck{
 			TLSSkipVerify:                  true,
 			Method:                         "GET",
-			Timeout:                        "10s",
-			Interval:                       "30s",
+			Timeout:                        "5s",
+			Interval:                       "20s",
 			HTTP:                           healthURL,
 			Name:                           "health check for cache server",
 			DeregisterCriticalServiceAfter: "15s",
@@ -150,13 +148,14 @@ func (c *ConsulService) Provision(ctx caddy.Context) error {
 			if err := c.Srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 				errChan <- err
 			}
-			fmt.Println("enter")
 		}()
 	}
 
 	errChan <- nil
 
 	// a routine to update the connection peers
+	// TODO: research about the consul's event maybe we can use it
+	// to replace this routine
 	go func() {
 		t := time.NewTicker(time.Second * 5)
 		for {
@@ -164,13 +163,12 @@ func (c *ConsulService) Provision(ctx caddy.Context) error {
 			case <-t.C:
 				peers, err := c.GetPeers()
 				if err != nil {
-					fmt.Println("fuck", err.Error())
+					caddy.Log().Named("distributed cache").Error(fmt.Sprintf("get peer error: %s", err.Error()))
 				}
 
 				atch := backends.GetAutoCache()
 				atch.GroupcachePool.Set(peers...)
-				fmt.Println("Peer: ", peers)
-
+				caddy.Log().Named("distributed cache").Info(fmt.Sprintf("Peers: %s", peers))
 			}
 		}
 	}()
@@ -181,7 +179,8 @@ func (c *ConsulService) Provision(ctx caddy.Context) error {
 
 func (c *ConsulService) GetPeers() ([]string, error) {
 
-	result := []string{}
+	peerMap := make(map[string]struct{})
+	peers := []string{}
 
 	name := "cache_server"
 	serviceData, _, err := c.Client.Health().Service(name, "", true, &api.QueryOptions{})
@@ -194,10 +193,14 @@ func (c *ConsulService) GetPeers() ([]string, error) {
 			continue
 		}
 
-		result = append(result, fmt.Sprintf("%s", entry.Service.Address))
+		address := fmt.Sprintf("%s", entry.Service.Address)
+		if _, ok := peerMap[address]; !ok {
+			peerMap[address] = struct{}{}
+			peers = append(peers, address)
+		}
 	}
 
-	return result, nil
+	return peers, nil
 }
 
 var (

@@ -1,0 +1,22 @@
+
+* Distributed Cache Example
+  
+  Note! It's still under development. A lot of issues are remained to be solved.
+
+
+* Helper scripts
+  
+  To provision the test data with the one of the following two commands.
+  
+  #+begin_src sh
+    PROJECT_PATH=/app docker-compose --project-directory=./ -f example/distributed_cache/docker-compose.yaml exec -w /app/provision cdp "bash provision.sh"
+  #+end_src
+  
+  #+begin_src sh
+    docker exec -w /app/benchmark cdp bash provision.sh
+  #+end_src
+
+  If you want to run an interactive shell for development, the following command will do it for you.
+  #+begin_src sh
+    PROJECT_PATH=/app docker-compose --project-directory=./ -f example/distributed_cache/docker-compose.yaml run -p9992:9991 --entrypoint="/bin/bash" cdp2
+  #+end_src  
