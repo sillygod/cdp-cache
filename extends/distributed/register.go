@@ -138,9 +138,10 @@ func (c *ConsulService) Provision(ctx caddy.Context) error {
 	atch := backends.GetAutoCache()
 	if atch != nil {
 		mux := http.NewServeMux()
-		mux.Handle("/_gp/", atch)
+		mux.Handle("/_groupcache/", atch)
+
 		c.Srv = &http.Server{
-			// Addr:    ip.String(),
+			Addr:    ":http",
 			Handler: mux,
 		}
 
@@ -193,7 +194,7 @@ func (c *ConsulService) GetPeers() ([]string, error) {
 			continue
 		}
 
-		address := fmt.Sprintf("%s", entry.Service.Address)
+		address := fmt.Sprintf("http://%s", entry.Service.Address)
 		if _, ok := peerMap[address]; !ok {
 			peerMap[address] = struct{}{}
 			peers = append(peers, address)

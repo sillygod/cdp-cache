@@ -66,14 +66,14 @@ func (h *Handler) addStatusHeaderIfConfigured(w http.ResponseWriter, status stri
 func (h *Handler) respond(w http.ResponseWriter, entry *Entry, cacheStatus string) error {
 	h.addStatusHeaderIfConfigured(w, cacheStatus)
 	copyHeaders(entry.Response.snapHeader, w.Header())
-	// w.WriteHeader(entry.Response.Code)
 	err := entry.WriteBodyTo(w)
 	if err != nil {
 		h.logger.Error("cache handler", zap.Error(err))
-		w.WriteHeader(entry.Response.Code)
 		debug.PrintStack()
+		return caddyhttp.Error(entry.Response.Code, err)
 	}
-	return err
+
+	return nil
 }
 
 func popOrNil(h *Handler, errChan chan error) (err error) {
@@ -288,16 +288,14 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyht
 	upstreamDuration = time.Since(t)
 
 	if err != nil {
-		w.WriteHeader(entry.Response.Code)
-		return err
+		return caddyhttp.Error(entry.Response.Code, err)
 	}
 
 	// Case when response was private but now is public
 	if entry.isPublic {
 		err := entry.setBackend(r.Context(), h.Config)
 		if err != nil {
-			w.WriteHeader(500)
-			return err
+			return caddyhttp.Error(http.StatusInternalServerError, err)
 		}
 
 		h.Cache.Put(r, entry)

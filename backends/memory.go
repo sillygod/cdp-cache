@@ -21,7 +21,6 @@ const getterCtxKey ctxKey = "getter"
 
 var (
 	groupName = "http_cache"
-	pool      *groupcache.HTTPPool
 	atch      *autocache.Autocache
 	groupch   *groupcache.Group
 	l         sync.Mutex
@@ -58,10 +57,6 @@ func InitGroupCacheRes(maxSize int) error {
 		}
 	}
 
-	if pool == nil {
-		pool = atch.GroupcachePool
-	}
-
 	if groupch == nil {
 		groupch = groupcache.NewGroup(groupName, int64(maxSize), groupcache.GetterFunc(getter))
 	}
@@ -84,7 +79,8 @@ func getter(ctx context.Context, key string, dest groupcache.Sink) error {
 func NewInMemoryBackend(ctx context.Context, key string, expiration time.Time) (Backend, error) {
 	// add the expiration time as the suffix of the key
 	i := &InMemoryBackend{Ctx: ctx}
-	i.Key = i.composeKey(key, expiration)
+	// i.Key = i.composeKey(key, expiration)
+	i.Key = key
 	return i, nil
 }
 
@@ -124,11 +120,20 @@ func (i *InMemoryBackend) Close() error {
 
 // GetReader return a reader for the write public response
 func (i *InMemoryBackend) GetReader() (io.ReadCloser, error) {
+	caddy.Log().Named("backend:memory").Info("fuck key is: " + i.Key)
+
 	if len(i.cachedBytes) == 0 {
 		err := groupch.Get(i.Ctx, i.Key, groupcache.AllocatingByteSliceSink(&i.cachedBytes))
 		if err != nil {
 			return nil, err
 		}
+	}
+
+	// temp to write this
+	caddy.Log().Named("backend:memory").Info("yoyo fuck key is: " + i.Key)
+	err := groupch.Get(i.Ctx, i.Key, groupcache.AllocatingByteSliceSink(&i.cachedBytes))
+	if err != nil {
+		return nil, err
 	}
 
 	rc := ioutil.NopCloser(bytes.NewReader(i.cachedBytes))
