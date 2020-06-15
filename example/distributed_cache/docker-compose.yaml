@@ -20,6 +20,8 @@ services:
       sh -c "echo 'spin up caddy proxy cache...' &&
       cd ${PROJECT_PATH} &&
       go run $PROJECT_PATH/cmd/main.go run --config example/distributed_cache/Caddyfile"
+    ports:
+      - "9991:9991"
     environment:
       - PROJECT_PATH=${PROJECT_PATH}
     depends_on:
@@ -28,12 +30,12 @@ services:
   cdp2:
     <<: *cdp-source
     container_name: cdp2
+    ports:
+      - "9992:9991"
+
 
     
 volumes:
   cdp:
   go-build-cache:
 
-# PROJECT_PATH=/app docker-compose --project-directory=./ -f example/distributed_cache/docker-compose.yaml up
-
-      

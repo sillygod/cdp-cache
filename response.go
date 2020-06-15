@@ -130,6 +130,9 @@ func (r *Response) WriteHeader(code int) {
 	r.snapHeader = http.Header{}
 	copyHeaders(r.Header(), r.snapHeader)
 	r.snapHeader.Del("server")
+
+	// NOTE: intent to delete the content-length
+	r.snapHeader.Del("Content-Length")
 	r.headersChan <- struct{}{}
 }
 

@@ -42,15 +42,16 @@
     #+end_src
 
 *** purge the cache with http DELETE request
+    It supports the regular expression.
     
     #+begin_src restclient
       DELETE http://:host/caches/purge
       Content-Type: application/json
 
       {
-      "method": "GET",
-      "host": "localhost",
-      "uri": ".*\\.txt"
+        "method": "GET" ,
+        "host": "localhost",
+        "uri": ".*\\.txt"
       }
     #+end_src
 ** Support cluster with consul
@@ -85,6 +86,11 @@
   Xcaddy also provide a way to develop plugin locally.
   #+begin_src sh
     xcaddy run --config cmd/Caddyfile
+  #+end_src
+  
+  To remove unused dependencies
+  #+begin_src sh
+    go mod tidy
   #+end_src
 
 * How to run
@@ -150,10 +156,10 @@
    | proxy + file cache      | 13853 | 3.29ms /  4.09ms / 5.26ms |
    | proxy + in memory cache | 20622 | 2.20ms /  3.03ms / 4.68ms |
 
-  
 * Todo list
   
   - [ ] custom log format (currently only add zap logger to print info)
     Idealy, We can implement a custom log module.
   - [ ] distributed cache
   - [ ] more optimization..
+  - [ ] transfer closed with 41192 bytes remaining to read (a weird error)

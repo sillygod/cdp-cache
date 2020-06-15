@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/caddyserver/caddy/v2"
 	"github.com/golang/groupcache"
 	"github.com/pomerium/autocache"
 )
@@ -20,7 +21,6 @@ const getterCtxKey ctxKey = "getter"
 
 var (
 	groupName = "http_cache"
-	pool      *groupcache.HTTPPool
 	atch      *autocache.Autocache
 	groupch   *groupcache.Group
 	l         sync.Mutex
@@ -32,6 +32,10 @@ type InMemoryBackend struct {
 	Key         string
 	content     bytes.Buffer
 	cachedBytes []byte
+}
+
+func GetAutoCache() *autocache.Autocache {
+	return atch
 }
 
 // InitGroupCacheRes init the resources for groupcache
@@ -53,10 +57,6 @@ func InitGroupCacheRes(maxSize int) error {
 		}
 	}
 
-	if pool == nil {
-		pool = atch.GroupcachePool
-	}
-
 	if groupch == nil {
 		groupch = groupcache.NewGroup(groupName, int64(maxSize), groupcache.GetterFunc(getter))
 	}
@@ -71,7 +71,10 @@ func getter(ctx context.Context, key string, dest groupcache.Sink) error {
 		return errors.New("no precollcect content")
 	}
 
-	dest.SetBytes(p)
+	if err := dest.SetBytes(p); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -79,7 +82,8 @@ func getter(ctx context.Context, key string, dest groupcache.Sink) error {
 func NewInMemoryBackend(ctx context.Context, key string, expiration time.Time) (Backend, error) {
 	// add the expiration time as the suffix of the key
 	i := &InMemoryBackend{Ctx: ctx}
-	i.Key = i.composeKey(key, expiration)
+	// i.Key = i.composeKey(key, expiration)
+	i.Key = key
 	return i, nil
 }
 
@@ -109,16 +113,25 @@ func (i *InMemoryBackend) Clean() error {
 func (i *InMemoryBackend) Close() error {
 	i.Ctx = context.WithValue(i.Ctx, getterCtxKey, i.content.Bytes())
 	err := groupch.Get(i.Ctx, i.Key, groupcache.AllocatingByteSliceSink(&i.cachedBytes))
+	if err != nil {
+		caddy.Log().Named("backend:memory").Error(err.Error())
+	}
+
 	return err
 }
 
 // GetReader return a reader for the write public response
 func (i *InMemoryBackend) GetReader() (io.ReadCloser, error) {
+	caddy.Log().Named("backend:memory").Info(fmt.Sprintf("key is %s\n", i.Key))
+	caddy.Log().Named("backend:memory").Info(fmt.Sprintf("length cached bytes is: %d\n", len(i.cachedBytes)))
+
 	if len(i.cachedBytes) == 0 {
 		err := groupch.Get(i.Ctx, i.Key, groupcache.AllocatingByteSliceSink(&i.cachedBytes))
+		caddy.Log().Named("backend:memory").Info(fmt.Sprintf("inner length cached bytes is: %d\n", len(i.cachedBytes)))
 		if err != nil {
 			return nil, err
 		}
+
 	}
 
 	rc := ioutil.NopCloser(bytes.NewReader(i.cachedBytes))
