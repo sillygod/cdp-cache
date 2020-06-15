@@ -71,7 +71,10 @@ func getter(ctx context.Context, key string, dest groupcache.Sink) error {
 		return errors.New("no precollcect content")
 	}
 
-	dest.SetBytes(p)
+	if err := dest.SetBytes(p); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -114,26 +117,21 @@ func (i *InMemoryBackend) Close() error {
 		caddy.Log().Named("backend:memory").Error(err.Error())
 	}
 
-	caddy.Log().Named("backend:memory").Info("enter")
 	return err
 }
 
 // GetReader return a reader for the write public response
 func (i *InMemoryBackend) GetReader() (io.ReadCloser, error) {
-	caddy.Log().Named("backend:memory").Info("fuck key is: " + i.Key)
+	caddy.Log().Named("backend:memory").Info(fmt.Sprintf("key is %s\n", i.Key))
+	caddy.Log().Named("backend:memory").Info(fmt.Sprintf("length cached bytes is: %d\n", len(i.cachedBytes)))
 
 	if len(i.cachedBytes) == 0 {
 		err := groupch.Get(i.Ctx, i.Key, groupcache.AllocatingByteSliceSink(&i.cachedBytes))
+		caddy.Log().Named("backend:memory").Info(fmt.Sprintf("inner length cached bytes is: %d\n", len(i.cachedBytes)))
 		if err != nil {
 			return nil, err
 		}
-	}
 
-	// temp to write this
-	caddy.Log().Named("backend:memory").Info("yoyo fuck key is: " + i.Key)
-	err := groupch.Get(i.Ctx, i.Key, groupcache.AllocatingByteSliceSink(&i.cachedBytes))
-	if err != nil {
-		return nil, err
 	}
 
 	rc := ioutil.NopCloser(bytes.NewReader(i.cachedBytes))

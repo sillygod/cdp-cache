@@ -51,8 +51,8 @@ type Handler struct {
 	Cache    *HTTPCache `json:"-"`
 	URLLocks *URLLock   `json:"-"`
 
-	DistributedRaw json.RawMessage           `json:"distributed,omitempty" caddy:"namespace=distributed inline_key=distributed"`
-	Distributed    distributed.ConsulService `json:"-"`
+	DistributedRaw json.RawMessage            `json:"distributed,omitempty" caddy:"namespace=distributed inline_key=distributed"`
+	Distributed    *distributed.ConsulService `json:"-"`
 
 	logger *zap.Logger
 }
@@ -67,13 +67,7 @@ func (h *Handler) respond(w http.ResponseWriter, entry *Entry, cacheStatus strin
 	h.addStatusHeaderIfConfigured(w, cacheStatus)
 	copyHeaders(entry.Response.snapHeader, w.Header())
 	err := entry.WriteBodyTo(w)
-	if err != nil {
-		h.logger.Error("cache handler", zap.Error(err))
-		debug.PrintStack()
-		return caddyhttp.Error(entry.Response.Code, err)
-	}
-
-	return nil
+	return err
 }
 
 func popOrNil(h *Handler, errChan chan error) (err error) {
@@ -119,7 +113,7 @@ func (h *Handler) fetchUpstream(req *http.Request, next caddyhttp.Handler) (*Ent
 
 		upstreamError := next.ServeHTTP(response, updatedReq)
 		errChan <- upstreamError
-		defer response.Close()
+		response.Close()
 
 	}(req, response)
 
@@ -204,7 +198,7 @@ func (h *Handler) Provision(ctx caddy.Context) error {
 		if err != nil {
 			return fmt.Errorf("loading distributed module: %s", err.Error())
 		}
-		h.Distributed = *val.(*distributed.ConsulService)
+		h.Distributed = val.(*distributed.ConsulService)
 
 	}
 
@@ -215,12 +209,11 @@ func (h *Handler) Provision(ctx caddy.Context) error {
 
 // Validate validates httpcache's configuration.
 func (h *Handler) Validate() error {
-
 	return nil
 }
 
+// Cleanup release the resources
 func (h *Handler) Cleanup() error {
-	// NOTE: release the resources
 	return nil
 }
 
@@ -273,6 +266,24 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyht
 		}
 	}
 
+	// Check whether the key exists in the groupcahce when the
+	// distributed cache is enabled.
+	if h.Distributed != nil {
+		// new an entry without fetching the upstream
+		response := NewResponse()
+		response.Close()
+		entry := NewEntry(getKey(h.Config.CacheKeyTemplate, r), r, response, h.Config)
+		err := entry.setBackend(r.Context(), h.Config)
+		if err != nil {
+			return caddyhttp.Error(http.StatusInternalServerError, err)
+		}
+
+		h.Cache.Put(r, entry)
+		if err := h.respond(w, entry, cacheHit); err == nil {
+			return nil
+		}
+	}
+
 	// Second case: CACHE SKIP
 	// The response is in cache but it is not public
 	// It should NOT be served from cache
@@ -299,11 +310,23 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyht
 		}
 
 		h.Cache.Put(r, entry)
-		return h.respond(w, entry, cacheMiss)
+		err = h.respond(w, entry, cacheMiss)
+		if err != nil {
+			h.logger.Error("cache handler", zap.Error(err))
+			debug.PrintStack()
+			return caddyhttp.Error(entry.Response.Code, err)
+		}
+
 	}
 
-	return h.respond(w, entry, cacheSkip)
+	err = h.respond(w, entry, cacheSkip)
+	if err != nil {
+		h.logger.Error("cache handler", zap.Error(err))
+		debug.PrintStack()
+		return caddyhttp.Error(entry.Response.Code, err)
+	}
 
+	return err
 }
 
 var (

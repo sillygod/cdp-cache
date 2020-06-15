@@ -39,6 +39,3 @@ volumes:
   cdp:
   go-build-cache:
 
-# PROJECT_PATH=/app docker-compose --project-directory=./ -f example/distributed_cache/docker-compose.yaml up
-
-      

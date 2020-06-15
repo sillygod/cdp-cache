@@ -120,8 +120,8 @@ func (c *ConsulService) Provision(ctx caddy.Context) error {
 		Check: &api.AgentServiceCheck{
 			TLSSkipVerify:                  true,
 			Method:                         "GET",
-			Timeout:                        "5s",
-			Interval:                       "20s",
+			Timeout:                        "3s",
+			Interval:                       "10s",
 			HTTP:                           healthURL,
 			Name:                           "health check for cache server",
 			DeregisterCriticalServiceAfter: "15s",
@@ -158,7 +158,7 @@ func (c *ConsulService) Provision(ctx caddy.Context) error {
 	// TODO: research about the consul's event maybe we can use it
 	// to replace this routine
 	go func() {
-		t := time.NewTicker(time.Second * 5)
+		t := time.NewTicker(time.Second * 30)
 		for {
 			select {
 			case <-t.C:

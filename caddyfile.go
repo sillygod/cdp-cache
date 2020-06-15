@@ -43,7 +43,8 @@ var (
 	defaultcacheBucketsNum        = 256
 	defaultCacheMaxMemorySize     = GB // default is 1 GB
 	defaultRedisConnectionSetting = "localhost:6379 0"
-	defaultCacheKeyTemplate       = "{http.request.method} {http.request.host}{http.request.uri.path}?{http.request.uri.query}"
+	defaultCacheKeyTemplate       = "{http.request.method}_{http.request.host}{http.request.uri.path}_{http.request.uri.query}"
+	// Note: prevent character space in the key
 	// the key is refereced from github.com/caddyserver/caddy/v2/modules/caddyhttp.addHTTPVarsToReplacer
 )
 
