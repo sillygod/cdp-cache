@@ -1,16 +1,14 @@
 package distributed
 
 import (
-	"context"
 	"fmt"
-	"net"
-	"net/http"
 	"sync"
 	"time"
 
 	"github.com/caddyserver/caddy/v2"
 	"github.com/hashicorp/consul/api"
 	"github.com/sillygod/cdp-cache/backends"
+	"github.com/sillygod/cdp-cache/pkg/helper"
 )
 
 var (
@@ -29,7 +27,6 @@ type ConsulService struct {
 	Catalog    *api.Catalog
 	Config     *Config
 	ServiceIDs []string
-	Srv        *http.Server
 }
 
 // CaddyModule returns the Caddy module information
@@ -40,23 +37,6 @@ func (ConsulService) CaddyModule() caddy.ModuleInfo {
 	}
 }
 
-// ipAddr get the local ip address
-func ipAddr() (net.IP, error) {
-	addrs, err := net.InterfaceAddrs()
-	if err != nil {
-		return nil, err
-	}
-
-	for _, addr := range addrs {
-		if ipnet, ok := addr.(*net.IPNet); ok && ipnet.IP.IsGlobalUnicast() {
-			if ipnet.IP.To4() != nil || ipnet.IP.To16() != nil {
-				return ipnet.IP, nil
-			}
-		}
-	}
-	return nil, nil
-}
-
 func (c *ConsulService) Validate() error {
 	return nil
 }
@@ -64,15 +44,6 @@ func (c *ConsulService) Validate() error {
 // Cleanup releases the holding resources
 func (c *ConsulService) Cleanup() error {
 	// TODO: Is there anywhere to distinguish reload or shutdown
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	if c.Srv != nil {
-		if err := c.Srv.Shutdown(ctx); err != nil {
-			return err
-		}
-	}
-
 	for _, id := range c.ServiceIDs {
 		if err := c.Client.Agent().ServiceDeregister(id); err != nil {
 			return err
@@ -102,7 +73,7 @@ func (c *ConsulService) Provision(ctx caddy.Context) error {
 	c.Catalog = c.Client.Catalog()
 	c.KV = c.Client.KV()
 
-	ip, err := ipAddr()
+	ip, err := helper.IPAddr()
 	if err != nil {
 		return err
 	}
@@ -133,32 +104,11 @@ func (c *ConsulService) Provision(ctx caddy.Context) error {
 		return err
 	}
 
-	errChan := make(chan error, 1)
-
-	atch := backends.GetAutoCache()
-	if atch != nil {
-		mux := http.NewServeMux()
-		mux.Handle("/_groupcache/", atch)
-
-		c.Srv = &http.Server{
-			Addr:    ":http",
-			Handler: mux,
-		}
-
-		go func() {
-			if err := c.Srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-				errChan <- err
-			}
-		}()
-	}
-
-	errChan <- nil
-
 	// a routine to update the connection peers
 	// TODO: research about the consul's event maybe we can use it
 	// to replace this routine
 	go func() {
-		t := time.NewTicker(time.Second * 30)
+		t := time.NewTicker(time.Second * 20)
 		for {
 			select {
 			case <-t.C:
@@ -167,15 +117,14 @@ func (c *ConsulService) Provision(ctx caddy.Context) error {
 					caddy.Log().Named("distributed cache").Error(fmt.Sprintf("get peer error: %s", err.Error()))
 				}
 
-				atch := backends.GetAutoCache()
-				atch.GroupcachePool.Set(peers...)
-				caddy.Log().Named("distributed cache").Info(fmt.Sprintf("Peers: %s", peers))
+				pool := backends.GetGroupCachePool()
+				pool.Set(peers...)
+				caddy.Log().Named("distributed cache").Debug(fmt.Sprintf("Peers: %s", peers))
 			}
 		}
 	}()
 
-	err = <-errChan
-	return err
+	return nil
 }
 
 func (c *ConsulService) GetPeers() ([]string, error) {

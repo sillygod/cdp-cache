@@ -33,6 +33,28 @@ services:
     ports:
       - "9992:9991"
 
+  cdp3:
+    <<: *cdp-source
+    container_name: cdp3
+    ports:
+      - "9993:9991"
+
+  cdp4:
+    <<: *cdp-source
+    container_name: cdp4
+    ports:
+      - "9994:9991"
+
+  file:
+    <<: *cdp-source
+    container_name: file
+    ports:
+      - "9995:9995"
+
+    command: >
+      sh -c "echo 'spin up caddy proxy cache...' &&
+      cd ${PROJECT_PATH} &&
+      go run $PROJECT_PATH/cmd/main.go run --adapter caddyfile --config example/distributed_cache/sourceCaddyfile"
 
     
 volumes:
