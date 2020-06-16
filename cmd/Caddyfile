@@ -15,13 +15,6 @@
 
         cache_type in_memory
         match_path /
-        path /tmp/cache
-
-        distributed consul {
-           service_name "cache_server"
-            addr "127.0.0.1:8500"
-            health_check ":7777/health"
-        }
 
     }
 

@@ -49,6 +49,7 @@ func NewResponse() *Response {
 	return r
 }
 
+// Header return the header from the upstream response
 func (r *Response) Header() http.Header {
 	return r.HeaderMap
 }
@@ -81,6 +82,7 @@ func (r *Response) writeHeader(b []byte, str string) {
 	r.WriteHeader(200)
 }
 
+// Write writes the upstream's content in the backend's storage
 func (r *Response) Write(buf []byte) (int, error) {
 
 	// debug.PrintStack()
@@ -99,10 +101,12 @@ func (r *Response) Write(buf []byte) (int, error) {
 	return 0, errors.New("No storage provided")
 }
 
+// WaitClose waits the response to be closed.
 func (r *Response) WaitClose() {
 	<-r.closedChan
 }
 
+// GetReader gets the reader from the setted backend
 func (r *Response) GetReader() (io.ReadCloser, error) {
 	if r.bodyComplete == false {
 		<-r.bodyCompleteChan
@@ -110,15 +114,18 @@ func (r *Response) GetReader() (io.ReadCloser, error) {
 	return r.body.GetReader()
 }
 
+// SetBody sets the backend to body for the further write usage
 func (r *Response) SetBody(body backends.Backend) {
 	r.body = body
 	r.bodyChan <- struct{}{}
 }
 
+// WaitHeaders waits the header to be written
 func (r *Response) WaitHeaders() {
 	<-r.headersChan
 }
 
+// WriteHeader keeps the upstream response header
 func (r *Response) WriteHeader(code int) {
 	if r.wroteHeader {
 		return
@@ -179,6 +186,7 @@ func isWebSocket(h http.Header) bool {
 	return false
 }
 
+// Flush flushes the backend's storage (currently, only file storage need to call this)
 func (r *Response) Flush() {
 	if !r.wroteHeader {
 		r.WriteHeader(200)
