@@ -108,7 +108,7 @@ func (c *ConsulService) Provision(ctx caddy.Context) error {
 	// TODO: research about the consul's event maybe we can use it
 	// to replace this routine
 	go func() {
-		t := time.NewTicker(time.Second * 30)
+		t := time.NewTicker(time.Second * 20)
 		for {
 			select {
 			case <-t.C:
@@ -119,7 +119,7 @@ func (c *ConsulService) Provision(ctx caddy.Context) error {
 
 				pool := backends.GetGroupCachePool()
 				pool.Set(peers...)
-				caddy.Log().Named("distributed cache").Info(fmt.Sprintf("Peers: %s", peers))
+				caddy.Log().Named("distributed cache").Debug(fmt.Sprintf("Peers: %s", peers))
 			}
 		}
 	}()

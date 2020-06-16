@@ -1,0 +1,9 @@
+:9995 {
+    header Cache-control "public"
+    root * /tmp/caddy-benchmark
+    file_server
+
+    log {
+        level info
+    }
+}

@@ -1,8 +1,5 @@
 package backends
 
-// https://intone.cc/2018/07/golang-%E4%BD%BF%E7%94%A8-group-cache-%E4%BE%86%E5%AF%AB%E4%B8%80%E5%80%8B-image-server-%E7%AF%84%E4%BE%8B/
-// https://kknews.cc/zh-tw/code/yvj9a5b.html
-
 import (
 	"bytes"
 	"context"
@@ -99,7 +96,6 @@ func InitGroupCacheRes(maxSize int) error {
 }
 
 func getter(ctx context.Context, key string, dest groupcache.Sink) error {
-	// this will be nil..
 	p, ok := ctx.Value(getterCtxKey).([]byte)
 	if !ok {
 		return errors.New("no precollcect content")
@@ -146,6 +142,7 @@ func (i *InMemoryBackend) Clean() error {
 // Close writeh the temp buffer's content to the groupcache
 func (i *InMemoryBackend) Close() error {
 	i.Ctx = context.WithValue(i.Ctx, getterCtxKey, i.content.Bytes())
+
 	err := groupch.Get(i.Ctx, i.Key, groupcache.AllocatingByteSliceSink(&i.cachedBytes))
 	if err != nil {
 		caddy.Log().Named("backend:memory").Error(err.Error())
@@ -156,22 +153,13 @@ func (i *InMemoryBackend) Close() error {
 
 // GetReader return a reader for the write public response
 func (i *InMemoryBackend) GetReader() (io.ReadCloser, error) {
-	caddy.Log().Named("backend:memory").Info(fmt.Sprintf("key is %s\n", i.Key))
-	caddy.Log().Named("backend:memory").Info(fmt.Sprintf("length cached bytes is: %d\n", len(i.cachedBytes)))
 
 	if len(i.cachedBytes) == 0 {
 		err := groupch.Get(i.Ctx, i.Key, groupcache.AllocatingByteSliceSink(&i.cachedBytes))
-		caddy.Log().Named("backend:memory").Info(fmt.Sprintf("inner length cached bytes is: %d\n", len(i.cachedBytes)))
 		if err != nil {
 			return nil, err
 		}
 
-	}
-
-	i.cachedBytes = []byte{}
-	err := groupch.Get(i.Ctx, i.Key, groupcache.AllocatingByteSliceSink(&i.cachedBytes))
-	if err != nil {
-		caddy.Log().Named("backend:memory").Info(fmt.Sprintf("test after set cache cached bytes is: %s\n", err.Error()))
 	}
 
 	rc := ioutil.NopCloser(bytes.NewReader(i.cachedBytes))
