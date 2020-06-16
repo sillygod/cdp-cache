@@ -1,5 +1,8 @@
 package backends
 
+// https://intone.cc/2018/07/golang-%E4%BD%BF%E7%94%A8-group-cache-%E4%BE%86%E5%AF%AB%E4%B8%80%E5%80%8B-image-server-%E7%AF%84%E4%BE%8B/
+// https://kknews.cc/zh-tw/code/yvj9a5b.html
+
 import (
 	"bytes"
 	"context"
@@ -7,12 +10,13 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net/http"
 	"sync"
 	"time"
 
 	"github.com/caddyserver/caddy/v2"
 	"github.com/golang/groupcache"
-	"github.com/pomerium/autocache"
+	"github.com/sillygod/cdp-cache/pkg/helper"
 )
 
 type ctxKey string
@@ -21,9 +25,10 @@ const getterCtxKey ctxKey = "getter"
 
 var (
 	groupName = "http_cache"
-	atch      *autocache.Autocache
 	groupch   *groupcache.Group
+	pool      *groupcache.HTTPPool
 	l         sync.Mutex
+	srv       *http.Server
 )
 
 // InMemoryBackend saves the content into inmemory with the groupcache.
@@ -34,8 +39,19 @@ type InMemoryBackend struct {
 	cachedBytes []byte
 }
 
-func GetAutoCache() *autocache.Autocache {
-	return atch
+func GetGroupCachePool() *groupcache.HTTPPool {
+	return pool
+}
+
+func ReleaseGroupCacheRes() error {
+	if srv != nil {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		if err := srv.Shutdown(ctx); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // InitGroupCacheRes init the resources for groupcache
@@ -46,22 +62,40 @@ func InitGroupCacheRes(maxSize int) error {
 	l.Lock()
 	defer l.Unlock()
 
-	if atch == nil {
-		atch, err = autocache.New(&autocache.Options{})
-		if err != nil {
-			return err
-		}
-		_, err = atch.Join(nil)
-		if err != nil {
-			return err
-		}
+	poolOptions := &groupcache.HTTPPoolOptions{}
+
+	ip, err := helper.IPAddr()
+	if err != nil {
+		return err
+	}
+
+	self := "http://" + ip.String()
+	if pool == nil {
+		pool = groupcache.NewHTTPPoolOpts(self, poolOptions)
 	}
 
 	if groupch == nil {
 		groupch = groupcache.NewGroup(groupName, int64(maxSize), groupcache.GetterFunc(getter))
 	}
 
-	return nil
+	mux := http.NewServeMux()
+	mux.Handle("/_groupcache/", pool)
+	srv = &http.Server{
+		Addr:    ":http",
+		Handler: mux,
+	}
+
+	errChan := make(chan error, 1)
+
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			errChan <- err
+		}
+	}()
+
+	errChan <- nil
+
+	return <-errChan
 }
 
 func getter(ctx context.Context, key string, dest groupcache.Sink) error {
@@ -132,6 +166,12 @@ func (i *InMemoryBackend) GetReader() (io.ReadCloser, error) {
 			return nil, err
 		}
 
+	}
+
+	i.cachedBytes = []byte{}
+	err := groupch.Get(i.Ctx, i.Key, groupcache.AllocatingByteSliceSink(&i.cachedBytes))
+	if err != nil {
+		caddy.Log().Named("backend:memory").Info(fmt.Sprintf("test after set cache cached bytes is: %s\n", err.Error()))
 	}
 
 	rc := ioutil.NopCloser(bytes.NewReader(i.cachedBytes))

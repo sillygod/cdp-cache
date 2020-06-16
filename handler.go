@@ -214,7 +214,8 @@ func (h *Handler) Validate() error {
 
 // Cleanup release the resources
 func (h *Handler) Cleanup() error {
-	return nil
+	err := backends.ReleaseGroupCacheRes()
+	return err
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhttp.Handler) error {
