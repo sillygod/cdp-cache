@@ -269,6 +269,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyht
 
 	// Check whether the key exists in the groupcahce when the
 	// distributed cache is enabled.
+	// Currently, only support the memory backends
 	if h.Distributed != nil {
 		// new an entry without fetching the upstream
 		response := NewResponse()

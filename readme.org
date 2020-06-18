@@ -56,7 +56,7 @@
     #+end_src
 ** Support cluster with consul
    
-   NOTE: still under development.
+   NOTE: still under development and only the =memory= backend supports. 
    
    I've provided a simple example to mimic a cluster environment.
    
@@ -159,6 +159,6 @@
   
   - [ ] custom log format (currently only add zap logger to print info)
     Idealy, We can implement a custom log module.
-  - [ ] distributed cache
+  - [ ] distributed cache (in progress)
+  - [ ] add more tests
   - [ ] more optimization..
-  - [ ] transfer closed with 41192 bytes remaining to read (a weird error)
