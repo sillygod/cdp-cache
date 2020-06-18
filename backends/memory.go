@@ -3,7 +3,6 @@ package backends
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -98,7 +97,8 @@ func InitGroupCacheRes(maxSize int) error {
 func getter(ctx context.Context, key string, dest groupcache.Sink) error {
 	p, ok := ctx.Value(getterCtxKey).([]byte)
 	if !ok {
-		return errors.New("no precollcect content")
+		caddy.Log().Named("backend:memory").Warn("no precollcect content")
+		return nil
 	}
 
 	if err := dest.SetBytes(p); err != nil {
