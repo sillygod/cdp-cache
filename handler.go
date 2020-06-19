@@ -319,6 +319,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyht
 			return caddyhttp.Error(entry.Response.Code, err)
 		}
 
+		return nil
 	}
 
 	err = h.respond(w, entry, cacheSkip)
@@ -328,7 +329,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyht
 		return caddyhttp.Error(entry.Response.Code, err)
 	}
 
-	return err
+	return nil
 }
 
 var (

@@ -38,7 +38,7 @@ var (
 	defaultStatusHeader           = "X-Cache-Status"
 	defaultLockTimeout            = time.Duration(5) * time.Minute
 	defaultMaxAge                 = time.Duration(5) * time.Minute
-	defaultPath                   = ""
+	defaultPath                   = "/tmp/caddy_cache"
 	defaultCacheType              = file
 	defaultcacheBucketsNum        = 256
 	defaultCacheMaxMemorySize     = GB // default is 1 GB
