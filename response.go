@@ -29,7 +29,7 @@ type Response struct {
 	wroteHeader  bool
 	bodyComplete bool
 
-	bodyChan         chan struct{}
+	bodyChan         chan struct{} // indicates whether the backend is set or not.
 	bodyCompleteChan chan struct{}
 	closedChan       chan struct{}
 	headersChan      chan struct{}
@@ -85,7 +85,6 @@ func (r *Response) writeHeader(b []byte, str string) {
 // Write writes the upstream's content in the backend's storage
 func (r *Response) Write(buf []byte) (int, error) {
 
-	// debug.PrintStack()
 	if !r.wroteHeader {
 		r.writeHeader(buf, "")
 	}
@@ -202,16 +201,16 @@ func (r *Response) Flush() {
 // Close indicate the data is completely written to the body
 // so that we can close it.
 func (r *Response) Close() error {
-
-	defer func() {
-		r.bodyComplete = true
-		r.bodyCompleteChan <- struct{}{}
-		r.closedChan <- struct{}{}
-	}()
-
-	if r.body != nil {
-		return r.body.Close()
+	if r.body == nil {
+		<-r.bodyChan
 	}
+
+	r.body.Close()
+
+	r.bodyComplete = true
+	r.bodyCompleteChan <- struct{}{}
+	r.closedChan <- struct{}{}
+
 	return nil
 }
 

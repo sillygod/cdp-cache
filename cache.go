@@ -300,7 +300,10 @@ func (e *Entry) writePublicResponse(w http.ResponseWriter) error {
 	}
 
 	defer reader.Close()
+	w.WriteHeader(e.Response.Code)
 
+	// In io.copy will write the status code.
+	// https://golang.org/pkg/net/http/#ResponseWriter
 	_, err = io.Copy(w, reader)
 	return err
 }
