@@ -10,6 +10,7 @@ import (
 type Backend interface {
 	io.Writer
 	io.Closer
+	Length() int
 	Clean() error
 	Flush() error
 	GetReader() (io.ReadCloser, error)
@@ -30,6 +31,10 @@ func (b *Base) Flush() error {
 	}
 
 	return nil
+}
+
+func (b *Base) Length() int {
+	return 0
 }
 
 func (b *Base) Clean() error {

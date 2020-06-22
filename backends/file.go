@@ -31,6 +31,11 @@ func NewFileBackend(path string) (Backend, error) {
 	}, nil
 }
 
+// Length return the cache content's length
+func (f *FileBackend) Length() int {
+	return 0
+}
+
 func (f *FileBackend) Write(p []byte) (n int, err error) {
 	defer f.subscription.NotifyAll(len(p))
 	return f.file.Write(p)

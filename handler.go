@@ -59,7 +59,7 @@ type Handler struct {
 
 func (h *Handler) addStatusHeaderIfConfigured(w http.ResponseWriter, status string) {
 	if h.Config.StatusHeader != "" {
-		w.Header().Add(h.Config.StatusHeader, status)
+		w.Header().Set(h.Config.StatusHeader, status)
 	}
 }
 
@@ -273,7 +273,6 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyht
 	if h.Distributed != nil {
 		// new an entry without fetching the upstream
 		response := NewResponse()
-		response.Close()
 		entry := NewEntry(getKey(h.Config.CacheKeyTemplate, r), r, response, h.Config)
 		err := entry.setBackend(r.Context(), h.Config)
 		if err != nil {
@@ -281,8 +280,19 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyht
 		}
 
 		h.Cache.Put(r, entry)
-		if err := h.respond(w, entry, cacheHit); err == nil {
+		response.Close()
+
+		// NOTE: should set the content-length to the header manually when distributed
+		// cache is enabled because we get the content from the other peer.
+		// In this case, the snapHeader will not contain the content-length info
+		if err = h.respond(w, entry, cacheHit); err == nil {
 			return nil
+		}
+
+		// when error is NoPreCollectError, we need to fetch the resource from the
+		// upstream.
+		if e, ok := err.(backends.NoPreCollectError); !ok {
+			return caddyhttp.Error(entry.Response.Code, e)
 		}
 	}
 
