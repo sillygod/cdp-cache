@@ -138,7 +138,7 @@
     The max memory usage for in_memory backend.
    
 ** Example configs
-   You can go to the directory [[file:example/redis_cache/][examples]]. It shows you each type of cache's configuration.
+   You can go to the directory [[file:example/][example]]. It shows you each type of cache's configuration.
 
 * Benchmarks
   

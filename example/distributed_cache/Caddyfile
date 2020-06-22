@@ -1,7 +1,7 @@
 {
     order http_cache before reverse_proxy
     admin 0.0.0.0:7777
-
+    debug
 }
 
 :9991 {

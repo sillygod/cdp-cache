@@ -17,6 +17,22 @@ import (
 
 type ctxKey string
 
+// NoPreCollectError is a custom error when there is no precollect content
+// in memory cache.
+type NoPreCollectError struct {
+	Content string
+}
+
+// Error return the error message
+func (e NoPreCollectError) Error() string {
+	return e.Content
+}
+
+// NewNoPreCollectError new a NoPreCollectError error
+func NewNoPreCollectError(msg string) error {
+	return NoPreCollectError{Content: msg}
+}
+
 const getterCtxKey ctxKey = "getter"
 
 var (
@@ -29,16 +45,20 @@ var (
 
 // InMemoryBackend saves the content into inmemory with the groupcache.
 type InMemoryBackend struct {
-	Ctx         context.Context
-	Key         string
-	content     bytes.Buffer
-	cachedBytes []byte
+	Ctx              context.Context
+	Key              string
+	content          bytes.Buffer
+	isContentWritten bool
+	cachedBytes      []byte
 }
 
+// GetGroupCachePool gets the groupcache's httpool
 func GetGroupCachePool() *groupcache.HTTPPool {
 	return pool
 }
 
+// ReleaseGroupCacheRes releases the rousources the memory backend
+// collects
 func ReleaseGroupCacheRes() error {
 	if srv != nil {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -97,8 +117,7 @@ func InitGroupCacheRes(maxSize int) error {
 func getter(ctx context.Context, key string, dest groupcache.Sink) error {
 	p, ok := ctx.Value(getterCtxKey).([]byte)
 	if !ok {
-		caddy.Log().Named("backend:memory").Warn("no precollcect content")
-		return nil
+		return NewNoPreCollectError("no precollect content")
 	}
 
 	if err := dest.SetBytes(p); err != nil {
@@ -124,6 +143,7 @@ func (i *InMemoryBackend) composeKey(key string, expiration time.Time) string {
 // Write adds the response content in the context for the groupcache's
 // setter function.
 func (i *InMemoryBackend) Write(p []byte) (n int, err error) {
+	i.isContentWritten = true
 	return i.content.Write(p)
 }
 
@@ -141,14 +161,24 @@ func (i *InMemoryBackend) Clean() error {
 
 // Close writeh the temp buffer's content to the groupcache
 func (i *InMemoryBackend) Close() error {
-	i.Ctx = context.WithValue(i.Ctx, getterCtxKey, i.content.Bytes())
+	if i.isContentWritten {
+		i.Ctx = context.WithValue(i.Ctx, getterCtxKey, i.content.Bytes())
+		err := groupch.Get(i.Ctx, i.Key, groupcache.AllocatingByteSliceSink(&i.cachedBytes))
+		if err != nil {
+			caddy.Log().Named("backend:memory").Error(err.Error())
+		}
+		return err
+	}
+	return nil
+}
 
-	err := groupch.Get(i.Ctx, i.Key, groupcache.AllocatingByteSliceSink(&i.cachedBytes))
-	if err != nil {
-		caddy.Log().Named("backend:memory").Error(err.Error())
+// Length return the cache content's length
+func (i *InMemoryBackend) Length() int {
+	if i.cachedBytes != nil {
+		return len(i.cachedBytes)
 	}
 
-	return err
+	return 0
 }
 
 // GetReader return a reader for the write public response
@@ -157,6 +187,7 @@ func (i *InMemoryBackend) GetReader() (io.ReadCloser, error) {
 	if len(i.cachedBytes) == 0 {
 		err := groupch.Get(i.Ctx, i.Key, groupcache.AllocatingByteSliceSink(&i.cachedBytes))
 		if err != nil {
+			caddy.Log().Named("backend:memory").Warn(err.Error())
 			return nil, err
 		}
 

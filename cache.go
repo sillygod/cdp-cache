@@ -8,6 +8,7 @@ import (
 	"io"
 	"math"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -300,10 +301,18 @@ func (e *Entry) writePublicResponse(w http.ResponseWriter) error {
 	}
 
 	defer reader.Close()
-	w.WriteHeader(e.Response.Code)
 
 	// In io.copy will write the status code.
 	// https://golang.org/pkg/net/http/#ResponseWriter
+	length := w.Header().Get("Content-Length")
+
+	if length == "" {
+		contentLength := strconv.Itoa(e.Response.body.Length())
+		w.Header().Set("Content-Length", contentLength)
+	}
+
+	// wow, we should write the header before calling this function
+	w.WriteHeader(e.Response.Code)
 	_, err = io.Copy(w, reader)
 	return err
 }
