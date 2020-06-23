@@ -89,6 +89,7 @@ func (cachePurge) CaddyModule() caddy.ModuleInfo {
 	}
 }
 
+// Purge deletes the cache
 func (cachePurge) Purge(cacheHandler *HTTPCache, conds string) error {
 	// Regular expression will be a little slow.
 	// In fact, there will not be so many keys in real world case

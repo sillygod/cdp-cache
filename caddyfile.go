@@ -193,10 +193,9 @@ func (h *Handler) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 				d, _ := json.Marshal(cacheRule)
 
 				config.RuleMatchersRaws = append(config.RuleMatchersRaws, RuleMatcherRawWithType{
-					Type: MatcherTypePath,
+					Type: MatcherTypeHeader,
 					Data: d,
 				})
-				// config.RuleMatchers = append(config.RuleMatchers, cacheRule)
 
 			case keyMatchPath:
 				if len(args) != 1 {
@@ -209,7 +208,6 @@ func (h *Handler) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 					Type: MatcherTypePath,
 					Data: d,
 				})
-				// config.RuleMatchers = append(config.RuleMatchers, cacheRule)
 
 			case keyCacheKey:
 				if len(args) != 1 {

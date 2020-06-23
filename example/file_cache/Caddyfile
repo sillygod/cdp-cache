@@ -11,6 +11,7 @@
         cache_type file 
         path /tmp/cache
         match_path /
+        match_header Content-Type image/jpg image/png "text/plain; charset=utf-8"
     }
 }
 
