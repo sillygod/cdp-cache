@@ -10,6 +10,7 @@
     http_cache {
         cache_type in_memory 
         match_path /
+        match_header Content-Type image/jpg image/png "text/plain; charset=utf-8"
     }
 }
 

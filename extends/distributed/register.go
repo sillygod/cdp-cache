@@ -52,6 +52,7 @@ func (c *ConsulService) Cleanup() error {
 	return nil
 }
 
+// Provision init the consul's agent and establish connection
 func (c *ConsulService) Provision(ctx caddy.Context) error {
 	// init the consul api client here
 	if c.Config == nil {
@@ -127,6 +128,7 @@ func (c *ConsulService) Provision(ctx caddy.Context) error {
 	return nil
 }
 
+// GetPeers get the peers in the same cluster
 func (c *ConsulService) GetPeers() ([]string, error) {
 
 	peerMap := make(map[string]struct{})

@@ -120,6 +120,11 @@
 
 *** match_header
     only the req's header match the condtions 
+    ex.
+    
+    #+begin_quote
+      match_header Content-Type image/jpg image/png "text/plain; charset=utf-8"
+    #+end_quote
 
 *** path
     The position where to save the file. Only applied when the =cache_type= is =file=.

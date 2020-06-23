@@ -15,6 +15,7 @@
 
         cache_type in_memory
         match_path /
+        match_header Content-Type image/jpg image/png "text/plain; charset=utf-8"
 
     }
 
@@ -24,10 +25,6 @@
         level debug
     }
 
-    #log {
-    #    output file /var/logs/caddy/access.log
-    #    format single_field common_log
-    #}
 }
 
 :9995 {

@@ -228,17 +228,16 @@ func getCacheStatus(req *http.Request, response *Response, config *Config) (bool
 	}
 
 	for _, rule := range config.RuleMatchers {
-		if rule.matches(req, response.Code, response.snapHeader) {
-
-			if expiration.Before(time.Now()) {
-				expiration = time.Now().Add(config.DefaultMaxAge)
-			}
-
-			return true, expiration
+		if !rule.matches(req, response.Code, response.snapHeader) {
+			return false, time.Now()
 		}
 	}
 
-	return false, time.Now()
+	if expiration.Before(time.Now()) {
+		expiration = time.Now().Add(config.DefaultMaxAge)
+	}
+
+	return true, expiration
 }
 
 func matchVary(curReq *http.Request, entry *Entry) bool {
