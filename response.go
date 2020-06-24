@@ -26,8 +26,9 @@ type Response struct {
 	body       backends.Backend
 	snapHeader http.Header
 
-	wroteHeader  bool
-	bodyComplete bool
+	wroteHeader        bool
+	bodyComplete       bool
+	IsFirstByteWritten bool
 
 	bodyChan         chan struct{} // indicates whether the backend is set or not.
 	bodyCompleteChan chan struct{}
@@ -94,6 +95,9 @@ func (r *Response) Write(buf []byte) (int, error) {
 	}
 
 	if r.body != nil {
+		if !r.IsFirstByteWritten {
+			r.IsFirstByteWritten = true
+		}
 		return r.body.Write(buf)
 	}
 
