@@ -14,7 +14,7 @@ import (
 func copyHeaders(from http.Header, to http.Header) {
 	for k, values := range from {
 		for _, v := range values {
-			to.Add(k, v)
+			to.Set(k, v)
 		}
 	}
 }

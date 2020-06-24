@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"runtime/debug"
 	"time"
 
 	"net/http"
@@ -66,6 +65,13 @@ func (h *Handler) addStatusHeaderIfConfigured(w http.ResponseWriter, status stri
 func (h *Handler) respond(w http.ResponseWriter, entry *Entry, cacheStatus string) error {
 	h.addStatusHeaderIfConfigured(w, cacheStatus)
 	copyHeaders(entry.Response.snapHeader, w.Header())
+
+	// when the request method is head, we don't need ot perform write body
+	if entry.Request.Method == "HEAD" {
+		w.WriteHeader(entry.Response.Code)
+		return nil
+	}
+
 	err := entry.WriteBodyTo(w)
 	return err
 }
@@ -264,6 +270,10 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyht
 	if exists && previousEntry.isPublic {
 		if err := h.respond(w, previousEntry, cacheHit); err == nil {
 			return nil
+		} else if _, ok := err.(backends.NoPreCollectError); ok {
+			// if the err is No pre collect, just return nil
+			w.WriteHeader(previousEntry.Response.Code)
+			return nil
 		}
 	}
 
@@ -325,7 +335,6 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyht
 		err = h.respond(w, entry, cacheMiss)
 		if err != nil {
 			h.logger.Error("cache handler", zap.Error(err))
-			debug.PrintStack()
 			return caddyhttp.Error(entry.Response.Code, err)
 		}
 
@@ -335,7 +344,6 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyht
 	err = h.respond(w, entry, cacheSkip)
 	if err != nil {
 		h.logger.Error("cache handler", zap.Error(err))
-		debug.PrintStack()
 		return caddyhttp.Error(entry.Response.Code, err)
 	}
 
