@@ -36,6 +36,7 @@ func (f *FileBackend) Length() int {
 	return 0
 }
 
+// Write writes the content to file
 func (f *FileBackend) Write(p []byte) (n int, err error) {
 	defer f.subscription.NotifyAll(len(p))
 	return f.file.Write(p)
@@ -53,11 +54,13 @@ func (f *FileBackend) Clean() error {
 	return os.Remove(f.file.Name())
 }
 
+// Close performs the file close
 func (f *FileBackend) Close() error {
 	f.subscription.Close()
 	return f.file.Close()
 }
 
+// GetReader get the ReadCloser from the file backend
 func (f *FileBackend) GetReader() (io.ReadCloser, error) {
 	newFile, err := os.Open(f.file.Name())
 	if err != nil {
@@ -78,6 +81,7 @@ type FileReader struct {
 	unsubscribe  func(<-chan int)
 }
 
+// Read reads the content
 func (r *FileReader) Read(p []byte) (n int, err error) {
 	for range r.subscription {
 		n, err := r.content.Read(p)
@@ -131,6 +135,7 @@ func (s *Subscription) NewSubscriber() <-chan int {
 	return subscription
 }
 
+// RemoveSubscriber remove the subscriber from the list
 func (s *Subscription) RemoveSubscriber(subscriber <-chan int) {
 	s.subscribersLock.Lock()
 	defer s.subscribersLock.Unlock()
@@ -151,6 +156,7 @@ func (s *Subscription) RemoveSubscriber(subscriber <-chan int) {
 	}
 }
 
+// Close closes all the subscribers
 func (s *Subscription) Close() {
 	s.closedLock.Lock()
 	defer s.closedLock.Unlock()
@@ -169,6 +175,7 @@ func (s *Subscription) Close() {
 	}
 }
 
+// NotifyAll notify all subscribers with the signal
 func (s *Subscription) NotifyAll(newBytes int) {
 	s.subscribersLock.RLock()
 	defer s.subscribersLock.RUnlock()
@@ -187,6 +194,7 @@ func (s *Subscription) hasSubscribers() bool {
 	return len(s.subscribers) != 0
 }
 
+// WaitAll waits all subscription are closed
 func (s *Subscription) WaitAll() {
 	if !s.hasSubscribers() {
 		return

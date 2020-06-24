@@ -37,6 +37,7 @@ func (ConsulService) CaddyModule() caddy.ModuleInfo {
 	}
 }
 
+// Validate checks the resource is set up correctly
 func (c *ConsulService) Validate() error {
 	return nil
 }
