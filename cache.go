@@ -40,6 +40,7 @@ const (
 	MatcherTypeHeader RuleMatcherType = "header"
 )
 
+// RuleMatcherRawWithType stores the marshal content for unmarshaling in provision stage
 type RuleMatcherRawWithType struct {
 	Type RuleMatcherType
 	Data json.RawMessage
@@ -319,6 +320,7 @@ func (e *Entry) writePublicResponse(w http.ResponseWriter) error {
 func (e *Entry) writePrivateResponse(w http.ResponseWriter) error {
 	e.Response.SetBody(backends.WrapResponseWriterToBackend(w))
 	e.Response.WaitClose()
+	w.WriteHeader(e.Response.Code)
 	return nil
 }
 
