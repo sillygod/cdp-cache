@@ -49,9 +49,9 @@
       Content-Type: application/json
 
       {
-        "method": "GET" ,
-        "host": "localhost",
-        "uri": ".*\\.txt"
+      "method": "GET" ,
+      "host": "localhost",
+      "uri": ".*\\.txt"
       }
     #+end_src
 ** Support cluster with consul
@@ -123,7 +123,7 @@
     ex.
     
     #+begin_quote
-      match_header Content-Type image/jpg image/png "text/plain; charset=utf-8"
+    match_header Content-Type image/jpg image/png "text/plain; charset=utf-8"
     #+end_quote
 
 *** path
@@ -141,7 +141,23 @@
 *** cache_max_memory_size
 
     The max memory usage for in_memory backend.
+    
+*** distributed
+    
+    Working in process. Currently, only support =consul= to establish the cluster of cache server node.
+
+    To see a example config, please refer [[file:example/distributed_cache/Caddyfile::health_check ":7777/health"][this]] 
+    
+**** service_name
+     specify your service to be registered in the consul agent.
    
+**** addr
+     the address of the consul agent.
+
+**** health_check
+     indicate the health_check endpoint which consul agent will use this endpoint to check the cache server is healthy
+     
+     
 ** Example configs
    You can go to the directory [[file:example/][example]]. It shows you each type of cache's configuration.
 
@@ -162,8 +178,8 @@
 
 * Todo list
   
+  - [ ] add more tests (first priority)
   - [ ] custom log format (currently only add zap logger to print info)
     Idealy, We can implement a custom log module.
   - [ ] distributed cache (in progress)
-  - [ ] add more tests
   - [ ] more optimization..
