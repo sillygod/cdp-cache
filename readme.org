@@ -8,6 +8,8 @@
 #+HTML: <a href="https://goreportcard.com/report/github.com/sillygod/cdp-cache"><img src="https://goreportcard.com/badge/github.com/sillygod/cdp-cache" /></a>
 #+HTML: </div>
 
+#+HTML: <a href="https://codeclimate.com/github/sillygod/cdp-cache/test_coverage"><img src="https://api.codeclimate.com/v1/badges/a99b4ae948836cdedd12/test_coverage" /></a>
+
 
 * Caddy Http Cache
 
