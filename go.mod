@@ -3,6 +3,7 @@ module github.com/sillygod/cdp-cache
 go 1.14
 
 require (
+	github.com/alecthomas/assert v0.0.0-20170929043011-405dbfeb8e38
 	github.com/armon/go-metrics v0.3.3 // indirect
 	github.com/caddyserver/caddy/v2 v2.0.0
 	github.com/go-redis/redis v6.15.8+incompatible

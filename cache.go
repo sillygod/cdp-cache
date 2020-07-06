@@ -30,6 +30,9 @@ var (
 	l           sync.RWMutex
 )
 
+// intend to mock for test
+var now = time.Now().UTC
+
 // RuleMatcherType specifies the type of matching rule to cache.
 type RuleMatcherType string
 
@@ -186,7 +189,7 @@ func judgeResponseShouldCacheOrNot(req *http.Request,
 		ReqHeaders:    reqHeaders,
 		ReqMethod:     reqMethod,
 
-		NowUTC: time.Now().UTC(),
+		NowUTC: now(),
 	}
 	rv := cacheobject.ObjectResults{}
 
@@ -206,11 +209,11 @@ func judgeResponseShouldCacheOrNot(req *http.Request,
 func getCacheStatus(req *http.Request, response *Response, config *Config) (bool, time.Time) {
 	// TODO: what does the lock time do, add more rule
 	if response.Code == http.StatusPartialContent || response.snapHeader.Get("Content-Range") != "" {
-		return false, time.Now().Add(config.LockTimeout)
+		return false, now().Add(config.LockTimeout)
 	}
 
 	if response.Code == http.StatusNotModified {
-		return false, time.Now()
+		return false, now()
 	}
 
 	reasonsNotToCache, expiration, _, _, err := judgeResponseShouldCacheOrNot(req, response.Code, response.snapHeader, false)
@@ -220,22 +223,22 @@ func getCacheStatus(req *http.Request, response *Response, config *Config) (bool
 
 	isPublic := len(reasonsNotToCache) == 0
 	if !isPublic {
-		return false, time.Now().Add(config.LockTimeout)
+		return false, now().Add(config.LockTimeout)
 	}
 
-	varyHeader := response.HeaderMap.Get("Vary")
+	varyHeader := response.snapHeader.Get("Vary")
 	if varyHeader == "*" {
-		return false, time.Now().Add(config.LockTimeout)
+		return false, now().Add(config.LockTimeout)
 	}
 
 	for _, rule := range config.RuleMatchers {
 		if !rule.matches(req, response.Code, response.snapHeader) {
-			return false, time.Now()
+			return false, now()
 		}
 	}
 
-	if expiration.Before(time.Now()) {
-		expiration = time.Now().Add(config.DefaultMaxAge)
+	if now().After(expiration.Add(-1 * time.Second)) {
+		expiration = now().Add(config.DefaultMaxAge)
 	}
 
 	return true, expiration
