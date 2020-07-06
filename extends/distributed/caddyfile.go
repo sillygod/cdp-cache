@@ -8,6 +8,7 @@ const (
 	keyServiceName = "service_name"
 	keyAddr        = "addr"
 	keyHealthCheck = "health_check"
+	keyToken       = "token"
 )
 
 // Config is the configuration for the consul
@@ -15,6 +16,7 @@ type Config struct {
 	ServiceName string `json:"service_name,omitempty"`
 	Addr        string `json:"addr,omitempty"`
 	HealthURL   string `json:"health_url,omitempty"`
+	Token       string `json:"token,omitempty"`
 }
 
 func getDefaultConfig() *Config {
@@ -47,6 +49,9 @@ func (c *ConsulService) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 
 			case keyHealthCheck:
 				config.HealthURL = args[0]
+
+			case keyToken:
+				config.Token = args[0]
 
 			default:
 				return d.Errf("unrecognized subdirective %s", parameter)

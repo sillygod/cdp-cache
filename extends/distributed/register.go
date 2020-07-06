@@ -65,6 +65,7 @@ func (c *ConsulService) Provision(ctx caddy.Context) error {
 
 	config := api.DefaultConfig()
 	config.Address = c.Config.Addr
+	config.Token = c.Config.Token
 
 	consulClient, err := api.NewClient(config)
 	if err != nil {
@@ -73,6 +74,7 @@ func (c *ConsulService) Provision(ctx caddy.Context) error {
 
 	c.Client = consulClient
 	c.Catalog = c.Client.Catalog()
+
 	c.KV = c.Client.KV()
 
 	ip, err := helper.IPAddr()

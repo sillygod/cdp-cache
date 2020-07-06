@@ -1,0 +1,23 @@
+version: "2"
+checks:
+  method-lines:
+    config:
+      threshold: 100
+plugins:
+  fixme:
+    enabled: true
+  gofmt:
+    enabled: true
+  golint:
+    enabled: true
+  govet:
+    enabled: true
+exclude_patterns:
+  - "**/*_test.go"
+  - "*_test.go"
+  - "**_test.go"
+  - "build/*"
+  - "benchmark/*"
+  - "example/*"
+  - "test/*"
+
