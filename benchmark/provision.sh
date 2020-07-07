@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PROJECT_PATH=$(cd "$(dirname $(dirname "${BASH_SOURCE[0]}"))"; pwd -P)
+PROJECT_PATH=$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd -P)
 
 if ! [ -e /tmp/caddy-benchmark ]
 then

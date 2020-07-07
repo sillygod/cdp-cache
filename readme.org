@@ -172,7 +172,7 @@
 
 ** Test Result
 
-   The following benchmark is analysized by =wrk -c 50 -d 30s --latency -t 4 http://localhost:9991/pg31674.txt= without log open
+   The following benchmark is analysized by =wrk -c 50 -d 30s --latency -t 4 http://localhost:9991/pg31674.txt= without log open. Before running this, ensure you provision the tests data by =bash benchmark/provision.sh=
   
    |                         | req/s | latency (50% 90% 99%)     |
    | proxy + file cache      | 13853 | 3.29ms /  4.09ms / 5.26ms |
