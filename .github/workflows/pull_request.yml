@@ -31,6 +31,17 @@ jobs:
         run: |
           go test ./...
 
+      # Generate test coverage for code climate
+      - name: generate test coverage
+        uses: paambaati/codeclimate-action@v2.6.0
+        env:
+          CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTED_ID }}
+        with:
+          debug: true
+          prefix: github.com/sillygod/cdp-cache
+          coverageCommand: go test -coverprofile=c.out ./...
+          coverageLocations: ${{ github.workspace }}/c.out:gocov
+
       - name: build
         run: |
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o caddy cmd/main.go

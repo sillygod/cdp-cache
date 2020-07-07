@@ -8,6 +8,8 @@
 #+HTML: <a href="https://goreportcard.com/report/github.com/sillygod/cdp-cache"><img src="https://goreportcard.com/badge/github.com/sillygod/cdp-cache" /></a>
 #+HTML: </div>
 
+#+HTML: <a href="https://codeclimate.com/github/sillygod/cdp-cache/test_coverage"><img src="https://api.codeclimate.com/v1/badges/a99b4ae948836cdedd12/test_coverage" /></a>
+
 
 * Caddy Http Cache
 
@@ -170,7 +172,7 @@
 
 ** Test Result
 
-   The following benchmark is analysized by =wrk -c 50 -d 30s --latency -t 4 http://localhost:9991/pg31674.txt= without log open
+   The following benchmark is analysized by =wrk -c 50 -d 30s --latency -t 4 http://localhost:9991/pg31674.txt= without log open. Before running this, ensure you provision the tests data by =bash benchmark/provision.sh=
   
    |                         | req/s | latency (50% 90% 99%)     |
    | proxy + file cache      | 13853 | 3.29ms /  4.09ms / 5.26ms |
