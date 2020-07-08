@@ -207,7 +207,7 @@ func judgeResponseShouldCacheOrNot(req *http.Request,
 }
 
 func getCacheStatus(req *http.Request, response *Response, config *Config) (bool, time.Time) {
-	// TODO: what does the lock time do, add more rule
+	// NOTE: it seems that we can remove lock timeout
 	if response.Code == http.StatusPartialContent || response.snapHeader.Get("Content-Range") != "" {
 		return false, now().Add(config.LockTimeout)
 	}

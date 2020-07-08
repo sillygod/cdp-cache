@@ -110,6 +110,7 @@ type Subscription struct {
 	subscribersLock  *sync.RWMutex
 }
 
+// NewSubscription new a subscription for file backend
 func NewSubscription() *Subscription {
 	return &Subscription{
 		closedLock:       new(sync.RWMutex),
@@ -118,6 +119,7 @@ func NewSubscription() *Subscription {
 	}
 }
 
+// NewSubscriber add a new subscrber in the subscribers container
 func (s *Subscription) NewSubscriber() <-chan int {
 	s.closedLock.Lock()
 	defer s.closedLock.Unlock()
