@@ -6,12 +6,14 @@ import (
 	"sync"
 )
 
+// URLLock is a lock to control the incoming request in a request-response cycle
 type URLLock struct {
 	globalLocks        []*sync.Mutex
 	keys               []map[string]*sync.Mutex
 	urlLockBucketsSize int
 }
 
+// NewURLLock new a request lock
 func NewURLLock(config *Config) *URLLock {
 	globalLocks := make([]*sync.Mutex, config.CacheBucketsNum)
 	keys := make([]map[string]*sync.Mutex, config.CacheBucketsNum)

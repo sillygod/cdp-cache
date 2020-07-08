@@ -84,6 +84,7 @@ func (r *Response) writeHeader(b []byte, str string) {
 }
 
 // Write writes the upstream's content in the backend's storage
+// this will wait the body(backend) is set
 func (r *Response) Write(buf []byte) (int, error) {
 
 	if !r.wroteHeader {
