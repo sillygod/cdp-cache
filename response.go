@@ -180,7 +180,7 @@ func isWebSocket(h http.Header) bool {
 
 	// To access multiple values of a key, access the map directly.
 	for _, value := range h.Values("Connection") {
-		if strings.ToLower(value) == "websocket" {
+		if strings.ToLower(value) == "upgrade" {
 			return true
 		}
 	}
