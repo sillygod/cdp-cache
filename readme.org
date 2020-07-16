@@ -180,8 +180,11 @@
 
 * Todo list
   
-  - [ ] add more tests (first priority)
+  - [ ] add more tests (in progress)
+        In the same time, write some fragement benchmark to find out which part can be optimized
+        go test -bench=. -benchmem -cpuprofile profile.out
+        go tool pprof profile.out (in the interactive mod, you can type web to open a web interface to see the graph)
   - [ ] custom log format (currently only add zap logger to print info)
-    Idealy, We can implement a custom log module.
+        Idealy, We can implement a custom log module.
   - [ ] distributed cache (in progress)
   - [ ] more optimization..

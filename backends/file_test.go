@@ -1,10 +1,75 @@
 package backends
 
 import (
+	"math/rand"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 )
+
+type FileBackendTestSuite struct {
+	suite.Suite
+}
+
+func (suite *FileBackendTestSuite) generateRandomPath(length int) string {
+	letters := "abcedfghijklmnoprqstuvwxyz"
+	result := make([]byte, length)
+	for i := range result {
+		result[i] += letters[rand.Intn(len(letters))]
+	}
+
+	return string(result)
+}
+
+func (suite *FileBackendTestSuite) TestReadAfterWrite() {
+
+	backend, err := NewFileBackend("/tmp/test")
+	suite.Nil(err)
+	defer backend.Close()
+
+	reader, _ := backend.GetReader()
+	defer reader.Close()
+
+	content := []byte("hello world")
+	backend.Write(content)
+
+	buf := make([]byte, len(content))
+	_, err = reader.Read(buf)
+	suite.Nil(err)
+
+	suite.Equal(content, buf)
+}
+
+func (suite *FileBackendTestSuite) TestAutoCreateDirIfNonExist() {
+	path := suite.generateRandomPath(5)
+	dirName := filepath.Join("/tmp", path)
+
+	_, err := os.Stat(dirName)
+	suite.True(os.IsNotExist(err))
+	backend, err := NewFileBackend(dirName)
+	suite.Nil(err)
+	_, err = os.Stat(dirName)
+	suite.Nil(err)
+	backend.Close()
+}
+
+func (suite *FileBackendTestSuite) TestDeleteFileAfterCleaned() {
+	backend, err := NewFileBackend("/tmp/hello")
+	suite.Nil(err)
+
+	fileName := backend.(*FileBackend).file.Name()
+	_, err = os.Stat(fileName)
+	suite.Nil(err)
+
+	backend.Close()
+	backend.Clean()
+
+	_, err = os.Stat(fileName)
+	suite.True(os.IsNotExist(err))
+}
 
 func TestSubscription(t *testing.T) {
 
@@ -51,4 +116,8 @@ func TestSubscription(t *testing.T) {
 		<-ended
 	})
 
+}
+
+func TestFileBackendTestSuite(t *testing.T) {
+	suite.Run(t, new(FileBackendTestSuite))
 }
