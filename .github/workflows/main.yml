@@ -29,7 +29,7 @@ jobs:
       # Runs test
       - name: run test
         run: |
-          go test ./...
+          go test -v ./...
 
       # Generate test coverage for code climate
       - name: generate test coverage
