@@ -84,7 +84,8 @@ func (suite *ResponseTestSuite) TestResponseWaitBackend() {
 	r.SetBody(backend)
 	<-writtenChan
 
-	reader, err := backend.GetReader()
+	r.Close()
+	reader, err := r.GetReader()
 	if err != nil {
 		suite.Error(err)
 	}
@@ -107,6 +108,7 @@ func (suite *ResponseTestSuite) TestCloseResponse() {
 	backend := NewTestBackend()
 	r.SetBody(backend)
 	r.Close()
+	r.Flush()
 
 	suite.True(backend.closed)
 }
@@ -118,6 +120,14 @@ func (suite *ResponseTestSuite) TestCleanResponse() {
 	r.Close()
 	r.Clean()
 	suite.True(backend.cleaned)
+}
+
+func (suite *ResponseTestSuite) TestSetNilBody() {
+	r := NewResponse()
+	r.SetBody(nil)
+	n, err := r.Write([]byte(`hello`))
+	suite.Equal(0, n)
+	suite.Error(err)
 }
 
 func TestResponseTestSuite(t *testing.T) {

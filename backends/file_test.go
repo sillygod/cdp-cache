@@ -56,6 +56,21 @@ func (suite *FileBackendTestSuite) TestAutoCreateDirIfNonExist() {
 	backend.Close()
 }
 
+func (suite *FileBackendTestSuite) TestMultiClose() {
+	backend, err := NewFileBackend("/tmp/hello")
+	suite.Nil(err)
+	backend.Close()
+	backend.Close()
+
+}
+
+func (suite *FileBackendTestSuite) TestLengthShouldBeZero() {
+	backend, err := NewFileBackend("/tmp/hello")
+	suite.Nil(err)
+	n := backend.Length()
+	suite.Equal(0, n)
+}
+
 func (suite *FileBackendTestSuite) TestDeleteFileAfterCleaned() {
 	backend, err := NewFileBackend("/tmp/hello")
 	suite.Nil(err)

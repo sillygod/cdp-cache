@@ -57,7 +57,7 @@ const (
 	keyMatchPath             = "match_path"
 	keyCacheKey              = "cache_key"
 	keyCacheBucketsNum       = "cache_bucket_num"
-	keyCacheMaxMemorySzie    = "cache_max_memory_size"
+	keyCacheMaxMemorySize    = "cache_max_memory_size"
 	keyCacheType             = "cache_type"
 	keyRedisConnctionSetting = "redis_connection_setting"
 	// format: addr db password or addr db or addr
@@ -161,7 +161,7 @@ func (h *Handler) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 				if len(args) != 1 {
 					return d.Err("Invalid usage of lock_timeout in cache config")
 				}
-				duration, err := time.ParseDuration(parameter)
+				duration, err := time.ParseDuration(args[0])
 				if err != nil {
 					return d.Err(fmt.Sprintf("%s:%s , %s", keyLockTimeout, "invalid duration", parameter))
 				}
@@ -172,7 +172,7 @@ func (h *Handler) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 					return d.Err("Invalid usage of default_max_age in cache config.")
 				}
 
-				duration, err := time.ParseDuration(parameter)
+				duration, err := time.ParseDuration(args[0])
 				if err != nil {
 					return d.Err(fmt.Sprintf("%s:%s, %s", keyDefaultMaxAge, "Invalid duration ", parameter))
 				}
