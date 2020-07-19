@@ -92,7 +92,7 @@ func (r *RedisBackend) Length() int {
 	return r.content.Len()
 }
 
-// Close writeh the temp buffer's content to the groupcache
+// Close write the temp buffer's content to the groupcache
 func (r *RedisBackend) Close() error {
 	_, err := client.Set(r.Key, r.content.Bytes(), r.expiration.Sub(time.Now())).Result()
 	return err
