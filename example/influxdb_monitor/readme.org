@@ -1,0 +1,7 @@
+* Influxdb Monitor Example
+  
+Let's try to monitor our cache server with influxdb
+
+#+begin_src sh
+PROJECT_PATH=/app docker-compose --project-directory=./ -f example/influxdb_monitor/docker-compose.yml up
+#+end_src

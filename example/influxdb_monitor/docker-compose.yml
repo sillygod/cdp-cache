@@ -1,0 +1,88 @@
+version: "3.7"
+
+services:
+  influxdb:
+    image: influxdb:1.8.1
+    volumes:
+      - influxdb:/var/lib/influxdb
+      - ./example/influxdb_monitor/influxdb.conf:/etc/influxdb/influxdb.conf
+    environment:
+      - INFLUXDB_ADMIN_USER=admin
+      - INFLUXDB_ADMIN_PASSWORD=pass1234
+      - INFLUXDB_USER=user
+      - INFLUXDB_USER_PASSWORD=pass1234
+
+    restart: always
+    networks:
+      - influxdata
+
+
+    ports:
+      - "8086:8086"
+      - "8082:8082"
+
+  # telegraf to collects the syslog 
+  telegraf:
+    image: telegraf:1.15.1
+    environment:
+      - HOSTNAME=songa-telegraf
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./example/influxdb_monitor/telegraf.conf:/etc/telegraf/telegraf.conf
+
+    restart: always
+
+    networks:
+      - influxdata
+
+    depends_on:
+      - influxdb
+
+  chronograf:
+    image: chronograf:1.8.4
+    environment:
+      - RESOURCES_PATH=/usr/share/chronograf/resources
+    volumes:
+      - chronograf:/var/lib/chronograf
+    ports:
+      - "8888:8888"
+
+    restart: always
+
+    networks:
+      - influxdata
+
+    depends_on:
+      - influxdb
+      - telegraf
+
+  # in the future add the grafana log panel
+
+  # cdp to write the log as syslog
+  cdp: &cdp-source
+    image: golang:1.14.2
+    container_name: cdp
+    volumes:
+      - cdp:/go/
+      - go-build-cache:/root/.cache/go-build
+      - .:${PROJECT_PATH}
+
+    command: >
+      sh -c "echo 'spin up caddy proxy cache...' &&
+      cd ${PROJECT_PATH} &&
+      go run $PROJECT_PATH/cmd/main.go run --config example/influxdb_monitor/Caddyfile"
+
+    ports:
+      - "9991:9991"
+    environment:
+      - PROJECT_PATH=${PROJECT_PATH}
+
+
+volumes:
+  cdp:
+  go-build-cache:
+  influxdb:
+  chronograf:
+
+networks:
+  influxdata:

@@ -208,6 +208,14 @@ func (h *Handler) Provision(ctx caddy.Context) error {
 
 	}
 
+	// if h.InfluxLogRaw != nil {
+	// 	val, err := ctx.LoadModule(h, "InfluxLogRaw")
+	// 	if err != nil {
+	// 		return fmt.Errorf("loading influxlog module: %s", err.Error())
+	// 	}
+	// 	h.InfluxLog = val.(*influxlog.InfluxLogWriter)
+	// }
+
 	config = h.Config
 
 	return nil

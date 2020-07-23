@@ -142,7 +142,19 @@ func (suite *RuleMatcherTestSuite) TestHeaderNotMatched() {
 	suite.False(match)
 }
 
+type EntryTestSuite struct {
+	suite.Suite
+}
+
+func (suite *EntryTestSuite) SetupSuite() {
+
+}
+
+func (suite *EntryTestSuite) TearDownSuite() {
+}
+
 func TestCacheStatusTestSuite(t *testing.T) {
 	suite.Run(t, new(CacheStatusTestSuite))
 	suite.Run(t, new(RuleMatcherTestSuite))
+	suite.Run(t, new(EntryTestSuite))
 }

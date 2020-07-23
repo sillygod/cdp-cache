@@ -1,0 +1,41 @@
+{
+    order http_cache before reverse_proxy
+    admin 0.0.0.0:7777
+    debug
+}
+
+:9991 {
+    reverse_proxy {
+        to localhost:9995
+    }
+
+    http_cache {
+        cache_type in_memory 
+        match_path /
+
+    }
+
+    log {
+        output influxlog {
+            addr http://localhost:8086
+            token "user:pass1234"
+            organization ""
+            bucket telegraf
+            # For influxDB 1.8 the token should follow the rule below
+            # https://github.com/influxdata/influxdb-client-go#influxdb-18-api-compatibility
+        }
+        level debug
+    }
+
+
+}
+
+:9995 {
+    header Cache-control "public"
+    root * /tmp/caddy-benchmark
+    file_server
+
+    log {
+        level info
+    }
+}
