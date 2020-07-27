@@ -52,7 +52,8 @@ func (suite *RedisBackendTestSuite) TestWriteCacheInRedis() {
 
 	suite.Equal(len(content), backend.Length())
 
-	backend.Close()
+	err = backend.Close()
+	suite.Nil(err)
 
 	reader, err := backend.GetReader()
 	suite.Nil(err)

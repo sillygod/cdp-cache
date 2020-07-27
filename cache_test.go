@@ -1,11 +1,13 @@
 package httpcache
 
 import (
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
+	"github.com/sillygod/cdp-cache/backends"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -16,10 +18,10 @@ func makeRequest(url string, headers http.Header) *http.Request {
 }
 
 func makeResponse(code int, headers http.Header) *Response {
-	return &Response{
-		Code:       code,
-		snapHeader: headers,
-	}
+	response := NewResponse()
+	response.Code = code
+	response.snapHeader = headers
+	return response
 }
 
 func makeHeader(key string, value string) http.Header {
@@ -144,13 +146,75 @@ func (suite *RuleMatcherTestSuite) TestHeaderNotMatched() {
 
 type EntryTestSuite struct {
 	suite.Suite
+	config *Config
 }
 
 func (suite *EntryTestSuite) SetupSuite() {
+	err := backends.InitGroupCacheRes(50 * 1024 * 1024)
+	suite.Nil(err)
+	suite.config = getDefaultConfig()
+}
 
+func (suite *EntryTestSuite) TestEntryWritePublicResponse() {
+
+	req := makeRequest("/", http.Header{})
+	res := makeResponse(200, makeHeader("Cache-Control", "max-age=43200"))
+	entry := NewEntry("unique_key", req, res, suite.config)
+
+	suite.Equal("unique_key", entry.Key())
+	rw := httptest.NewRecorder()
+
+	suite.config.Type = inMemory
+	input := []byte(`rain cats and dogs`)
+
+	go func() {
+		entry.Response.Write(input)
+		entry.Response.Close() // we can write the entry's body to rw after closing upstream response
+	}()
+
+	entry.setBackend(req.Context(), suite.config)
+
+	entry.WriteBodyTo(rw)
+	result, err := ioutil.ReadAll(rw.Result().Body)
+	suite.Nil(err)
+	suite.Equal(input, result)
+}
+
+func (suite *EntryTestSuite) TestEntryWritePrivateResponse() {
+	req := makeRequest("/", http.Header{})
+	res := makeResponse(502, http.Header{})
+	entry := NewEntry("unique_key2", req, res, suite.config)
+
+	go func() {
+		entry.Response.Close()
+	}()
+
+	rw := httptest.NewRecorder()
+	entry.WriteBodyTo(rw)
+	suite.Equal(502, rw.Code)
 }
 
 func (suite *EntryTestSuite) TearDownSuite() {
+	err := backends.ReleaseGroupCacheRes()
+	suite.Nil(err)
+}
+
+type HTTPCacheTestSuite struct {
+	suite.Suite
+	config *Config
+}
+
+func (suite *HTTPCacheTestSuite) SetupSuite() {
+	err := backends.InitGroupCacheRes(50 * 1024 * 1024)
+	suite.Nil(err)
+	suite.config = getDefaultConfig()
+}
+
+// TODO: add http cache test
+
+func (suite *HTTPCacheTestSuite) TearDownSuite() {
+	err := backends.ReleaseGroupCacheRes()
+	suite.Nil(err)
 }
 
 func TestCacheStatusTestSuite(t *testing.T) {
