@@ -43,7 +43,7 @@ var (
 	defaultcacheBucketsNum        = 256
 	defaultCacheMaxMemorySize     = GB // default is 1 GB
 	defaultRedisConnectionSetting = "localhost:6379 0"
-	defaultCacheKeyTemplate       = "{http.request.method} {http.request.host}{http.request.uri.path} {http.request.uri.query}"
+	defaultCacheKeyTemplate       = "{http.request.method} {http.request.host}{http.request.uri.path}?{http.request.uri.query}"
 	// Note: prevent character space in the key
 	// the key is refereced from github.com/caddyserver/caddy/v2/modules/caddyhttp.addHTTPVarsToReplacer
 )
@@ -63,7 +63,9 @@ const (
 	// format: addr db password or addr db or addr
 	// ex.
 	// localhost:6789 0 => connect without password. only index and host:port provided
+	// the following are keys for extensions
 	keyDistributed = "distributed"
+	keyInfluxLog   = "influxlog"
 )
 
 func init() {
@@ -190,11 +192,11 @@ func (h *Handler) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 				}
 
 				cacheRule := &HeaderRuleMatcher{Header: args[0], Value: args[1:]}
-				d, _ := json.Marshal(cacheRule)
+				data, _ := json.Marshal(cacheRule)
 
 				config.RuleMatchersRaws = append(config.RuleMatchersRaws, RuleMatcherRawWithType{
 					Type: MatcherTypeHeader,
-					Data: d,
+					Data: data,
 				})
 
 			case keyMatchPath:
@@ -202,11 +204,11 @@ func (h *Handler) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 					return d.Err("Invalid usage of match_path in cache config.")
 				}
 				cacheRule := &PathRuleMatcher{Path: args[0]}
-				d, _ := json.Marshal(cacheRule)
+				data, _ := json.Marshal(cacheRule)
 
 				config.RuleMatchersRaws = append(config.RuleMatchersRaws, RuleMatcherRawWithType{
 					Type: MatcherTypePath,
-					Data: d,
+					Data: data,
 				})
 
 			case keyCacheKey:
@@ -238,7 +240,7 @@ func (h *Handler) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 
 				unm, ok := mod.New().(caddyfile.Unmarshaler)
 				if !ok {
-					return d.Errf("distributed module '%s' is not a Caddfile unmarshaler", mod)
+					return d.Errf("distributed module '%s' is not a Caddyfile unmarshaler", mod)
 				}
 
 				err = unm.UnmarshalCaddyfile(d.NewFromNextSegment())
@@ -247,6 +249,13 @@ func (h *Handler) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 				}
 
 				h.DistributedRaw = caddyconfig.JSONModuleObject(unm, "distributed", "consul", nil)
+
+			// case keyInfluxLog:
+			// 	raw, err := setupInfluxLog(keyInfluxLog, d, args)
+			// 	if err != nil {
+			// 		return err
+			// 	}
+			// 	h.InfluxLogRaw = raw
 
 			default:
 				return d.Err("Unknown cache parameter: " + parameter)
@@ -257,6 +266,28 @@ func (h *Handler) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 	h.Config = config
 
 	return nil
+}
+
+func setupInfluxLog(key string, d *caddyfile.Dispenser, args []string) (json.RawMessage, error) {
+
+	mod, err := caddy.GetModule("caddy.logging.writers." + key)
+	if err != nil {
+		return nil, d.Errf("getting influxlog module '%s': '%v'", mod, err)
+	}
+
+	unm, ok := mod.New().(caddyfile.Unmarshaler)
+	if !ok {
+		return nil, d.Errf("influxlog module '%s' is not a Caddyfile unmarshaler", mod)
+	}
+
+	err = unm.UnmarshalCaddyfile(d.NewFromNextSegment())
+	if err != nil {
+		return nil, err
+	}
+
+	raw := caddyconfig.JSONModuleObject(unm, "mylog", "influxlog", nil)
+
+	return raw, nil
 }
 
 // Interface guards

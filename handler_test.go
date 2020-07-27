@@ -26,8 +26,7 @@ func (suite *CacheKeyTemplatingTestSuite) TestKeyReplacer() {
 	repl := caddyhttp.NewTestReplacer(r)
 	result := repl.ReplaceKnown(defaultCacheKeyTemplate, "")
 
-	suite.Equal("GET example.com/songa age=20&class=A", result)
-
+	suite.Equal("GET example.com/songa?age=20&class=A", result)
 }
 
 type DetermineShouldCacheTestSuite struct {

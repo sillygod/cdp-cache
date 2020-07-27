@@ -39,21 +39,23 @@
    
 *** first you can list the current caches
     
+    Given that you specify the port 7777 to serve caddy admin, you can get the list of cache by the api below.
+    
     #+begin_src restclient
-      GET http://example.com/caches
+      GET http://example.com:7777/caches
     #+end_src
 
 *** purge the cache with http DELETE request
     It supports the regular expression.
     
     #+begin_src restclient
-      DELETE http://:host/caches/purge
+      DELETE http://example.com:7777/caches/purge
       Content-Type: application/json
 
       {
-      "method": "GET" ,
-      "host": "localhost",
-      "uri": ".*\\.txt"
+        "method": "GET",
+        "host": "localhost",
+        "uri": ".*\\.txt"
       }
     #+end_src
 ** Support cluster with consul

@@ -26,10 +26,12 @@ func getDefaultConfig() *Config {
 	}
 }
 
-// UnmarshalCaddyfile deserializes Caddyfile tokens into caddy cache's Handler
+// UnmarshalCaddyfile deserializes Caddyfile tokens into consulservice's config
 // distributed consul {
 //   service_name
 //   addr
+//   token
+//   health_url
 // }
 func (c *ConsulService) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 	config := getDefaultConfig()
