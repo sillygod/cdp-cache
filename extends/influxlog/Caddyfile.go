@@ -31,7 +31,7 @@ func getDefaultConfig() *Config {
 // 	 organization
 //   bucket
 // }
-func (s *InfluxLogWriter) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
+func (s *Writer) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 	config := getDefaultConfig()
 
 	for d.Next() {
@@ -67,5 +67,5 @@ func (s *InfluxLogWriter) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 }
 
 var (
-	_ caddyfile.Unmarshaler = (*InfluxLogWriter)(nil)
+	_ caddyfile.Unmarshaler = (*Writer)(nil)
 )

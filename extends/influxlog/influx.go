@@ -11,7 +11,7 @@ import (
 )
 
 func init() {
-	caddy.RegisterModule(InfluxLogWriter{})
+	caddy.RegisterModule(Writer{})
 }
 
 type influxWriteCloser struct {
@@ -37,42 +37,48 @@ func (i *influxWriteCloser) Close() error {
 	return nil
 }
 
-type InfluxLogWriter struct {
+// Writer is a influxdb client to write time series data
+type Writer struct {
 	Client influxdb2.Client
 	Config *Config
 }
 
-func (InfluxLogWriter) CaddyModule() caddy.ModuleInfo {
+// CaddyModule returns the Caddy module information
+func (Writer) CaddyModule() caddy.ModuleInfo {
 	return caddy.ModuleInfo{
 		ID:  "caddy.logging.writers.influxlog",
-		New: func() caddy.Module { return new(InfluxLogWriter) },
+		New: func() caddy.Module { return new(Writer) },
 	}
 }
 
-func (s *InfluxLogWriter) Validate() error {
+// Validate currently do nothing
+func (s *Writer) Validate() error {
 	return nil
 }
 
-func (s *InfluxLogWriter) Cleanup() error {
+// Cleanup currently do nothing
+func (s *Writer) Cleanup() error {
 	s.Client.Close()
 	return nil
 }
 
-func (s *InfluxLogWriter) Provision(ctx caddy.Context) error {
+// Provision currently do nothing
+func (s *Writer) Provision(ctx caddy.Context) error {
 	return nil
 }
 
-func (s *InfluxLogWriter) String() string {
+// String returns the expression of this struct
+func (s *Writer) String() string {
 	return "influxlog" + s.Config.Addr
 }
 
 // WriterKey returns a unique key representing this influxLogWriter
-func (s *InfluxLogWriter) WriterKey() string {
+func (s *Writer) WriterKey() string {
 	return "influxlog" + s.Config.Addr
 }
 
 // OpenWriter opens a new influxdb client with connection
-func (s *InfluxLogWriter) OpenWriter() (io.WriteCloser, error) {
+func (s *Writer) OpenWriter() (io.WriteCloser, error) {
 	// This is will be called at the StandardLibLog's provision
 	client := influxdb2.NewClientWithOptions(
 		s.Config.Addr, s.Config.Token, influxdb2.DefaultOptions())
@@ -85,8 +91,8 @@ func (s *InfluxLogWriter) OpenWriter() (io.WriteCloser, error) {
 }
 
 var (
-	_ caddy.Provisioner  = (*InfluxLogWriter)(nil)
-	_ caddy.WriterOpener = (*InfluxLogWriter)(nil)
-	_ caddy.CleanerUpper = (*InfluxLogWriter)(nil)
-	_ caddy.Validator    = (*InfluxLogWriter)(nil)
+	_ caddy.Provisioner  = (*Writer)(nil)
+	_ caddy.WriterOpener = (*Writer)(nil)
+	_ caddy.CleanerUpper = (*Writer)(nil)
+	_ caddy.Validator    = (*Writer)(nil)
 )
