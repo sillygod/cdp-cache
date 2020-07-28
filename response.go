@@ -146,7 +146,6 @@ func (r *Response) WriteHeader(code int) {
 }
 
 func shouldUseCache(req *http.Request) bool {
-	// TODO Add more logic like get params, ?nocache=true
 
 	if req.Method != "GET" && req.Method != "HEAD" {
 		// Only cache Get and head request
