@@ -1,0 +1,120 @@
+{
+    "admin": {
+        "listen": "0.0.0.0:7777"
+    },
+    "apps": {
+        "http": {
+            "servers": {
+                "srv0": {
+                    "listen": [
+                        ":9991"
+                    ],
+                    "logs": {
+                        "default_logger_name": "log0"
+                    },
+                    "routes": [
+                        {
+                            "handle": [
+                                {
+                                    "config": {
+                                        "cache_buckets_num": 256,
+                                        "cache_key_template": "{http.request.method} {http.request.host}{http.request.uri.path}?{http.request.uri.query}",
+                                        "cache_max_memory_size": 1073741824,
+                                        "default_max_age": 300000000000,
+                                        "lock_timeout": 300000000000,
+                                        "path": "/tmp/caddy_cache",
+                                        "redis_connection_setting": "localhost:6379 0",
+                                        "rule_matcher_raws": [
+                                            {
+                                                "Data": {
+                                                    "path": "/"
+                                                },
+                                                "Type": "path"
+                                            }
+                                        ],
+                                        "status_header": "X-Cache-Status",
+                                        "type": "in_memory"
+                                    },
+                                    "handler": "http_cache"
+                                },
+                                {
+                                    "handler": "reverse_proxy",
+                                    "upstreams": [
+                                        {
+                                            "dial": "localhost:9995"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "srv1": {
+                    "listen": [
+                        ":9995"
+                    ],
+                    "logs": {
+                        "default_logger_name": "log1"
+                    },
+                    "routes": [
+                        {
+                            "handle": [
+                                {
+                                    "handler": "vars",
+                                    "root": "/tmp/caddy-benchmark"
+                                },
+                                {
+                                    "handler": "headers",
+                                    "response": {
+                                        "set": {
+                                            "Cache-Control": [
+                                                "public"
+                                            ]
+                                        }
+                                    }
+                                },
+                                {
+                                    "handler": "file_server",
+                                    "hide": [
+                                        "/Users/jing/Desktop/cdp-cache/example/influxdb_monitor/Caddyfile"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    "logging": {
+        "logs": {
+            "default": {
+                "level": "info"
+            },
+            "log0": {
+                "include": [
+                    "http.log.access.log0",
+                    "http.handlers.http_cache"
+                ],
+                "level": "debug",
+                "writer": {
+                    "Client": null,
+                    "Config": {
+                        "addr": "http://localhost:8086",
+                        "bucket": "telegraf",
+                        "organization": "",
+                        "token": "user:pass1234"
+                    },
+                    "output": "influxlog"
+                }
+            },
+
+            "log1": {
+                "include": [
+                    "http.log.access.log1"
+                ],
+                "level": "info"
+            }
+        }
+    }
+}

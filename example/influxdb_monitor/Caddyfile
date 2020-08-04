@@ -13,6 +13,7 @@
         cache_type in_memory 
         match_path /
 
+        default_max_age 1m
     }
 
     log {

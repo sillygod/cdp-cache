@@ -21,21 +21,21 @@ services:
       - "8082:8082"
 
   # telegraf to collects the syslog 
-  telegraf:
-    image: telegraf:1.15.1
-    environment:
-      - HOSTNAME=songa-telegraf
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./example/influxdb_monitor/telegraf.conf:/etc/telegraf/telegraf.conf
+  # telegraf:
+  #   image: telegraf:1.15.1
+  #   environment:
+  #     - HOSTNAME=songa-telegraf
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #     - ./example/influxdb_monitor/telegraf.conf:/etc/telegraf/telegraf.conf
 
-    restart: always
+  #   restart: always
 
-    networks:
-      - influxdata
+  #   networks:
+  #     - influxdata
 
-    depends_on:
-      - influxdb
+  #   depends_on:
+  #     - influxdb
 
   chronograf:
     image: chronograf:1.8.4
@@ -53,7 +53,6 @@ services:
 
     depends_on:
       - influxdb
-      - telegraf
 
   # in the future add the grafana log panel
   grafana:
@@ -66,7 +65,6 @@ services:
       - influxdata
     depends_on:
       - influxdb
-      - telegraf
 
   # cdp to write the log as syslog
   # cdp: &cdp-source

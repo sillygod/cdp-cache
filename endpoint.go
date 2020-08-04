@@ -11,6 +11,7 @@ import (
 	"sync"
 
 	"github.com/caddyserver/caddy/v2"
+	"github.com/sillygod/cdp-cache/pkg/helper"
 )
 
 var (
@@ -65,8 +66,8 @@ func (p *PurgePayload) parseURI() {
 
 func (p *PurgePayload) pruneHost() {
 
-	if strings.HasPrefix(p.Host, "http") {
-		p.Host = strings.Split(p.Host, ":")[1]
+	if strings.HasPrefix(p.Host, "http") || strings.HasPrefix(p.Host, "https") {
+		p.Host = strings.Split(p.Host, "//")[1]
 	}
 
 	if !strings.HasSuffix(p.Host, "/") {
@@ -120,8 +121,8 @@ func (c cachePurge) Routes() []caddy.AdminRoute {
 			Handler: caddy.AdminHandlerFunc(c.handlePurge),
 		},
 		{
-			Pattern: "/caches",
-			Handler: caddy.AdminHandlerFunc(c.handleListCacheKeys),
+			Pattern: "/caches/",
+			Handler: caddy.AdminHandlerFunc(c.handleCacheEndpoints),
 		},
 	}
 }
@@ -132,7 +133,43 @@ func health(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
+func (c cachePurge) handleShowCache(w http.ResponseWriter, r *http.Request) error {
+	var err error
+
+	if r.Method != http.MethodGet {
+		return caddy.APIError{
+			Code: http.StatusMethodNotAllowed,
+			Err:  fmt.Errorf("method not allowed"),
+		}
+	}
+
+	key := helper.TrimBy(r.URL.Path, "/", 2)
+	cache := getHandlerCache()
+
+	entry, exists := cache.Get(key, r)
+	if exists {
+		err = entry.WriteBodyTo(w)
+	}
+
+	return err
+}
+
+func (c cachePurge) handleCacheEndpoints(w http.ResponseWriter, r *http.Request) error {
+	// a workaround for handling the wildcard endpoint. Caddy uses the standard library's mux
+	// so it doesn't support this natively.
+
+	path := r.URL.Path
+
+	switch path {
+	case "/caches/":
+		return c.handleListCacheKeys(w, r)
+	default:
+		return c.handleShowCache(w, r)
+	}
+}
+
 func (c cachePurge) handleListCacheKeys(w http.ResponseWriter, r *http.Request) error {
+
 	if r.Method != http.MethodGet {
 		return caddy.APIError{
 			Code: http.StatusMethodNotAllowed,
