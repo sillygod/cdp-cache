@@ -250,13 +250,6 @@ func (h *Handler) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 
 				h.DistributedRaw = caddyconfig.JSONModuleObject(unm, "distributed", "consul", nil)
 
-			// case keyInfluxLog:
-			// 	raw, err := setupInfluxLog(keyInfluxLog, d, args)
-			// 	if err != nil {
-			// 		return err
-			// 	}
-			// 	h.InfluxLogRaw = raw
-
 			default:
 				return d.Err("Unknown cache parameter: " + parameter)
 			}
@@ -266,28 +259,6 @@ func (h *Handler) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 	h.Config = config
 
 	return nil
-}
-
-func setupInfluxLog(key string, d *caddyfile.Dispenser, args []string) (json.RawMessage, error) {
-
-	mod, err := caddy.GetModule("caddy.logging.writers." + key)
-	if err != nil {
-		return nil, d.Errf("getting influxlog module '%s': '%v'", mod, err)
-	}
-
-	unm, ok := mod.New().(caddyfile.Unmarshaler)
-	if !ok {
-		return nil, d.Errf("influxlog module '%s' is not a Caddyfile unmarshaler", mod)
-	}
-
-	err = unm.UnmarshalCaddyfile(d.NewFromNextSegment())
-	if err != nil {
-		return nil, err
-	}
-
-	raw := caddyconfig.JSONModuleObject(unm, "mylog", "influxlog", nil)
-
-	return raw, nil
 }
 
 // Interface guards

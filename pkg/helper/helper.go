@@ -1,6 +1,11 @@
 package helper
 
-import "net"
+import (
+	"net"
+	"strings"
+)
+
+var LogUTCTimeFormat = "2006/01/02 15:04:05"
 
 // IPAddr get the local node's ip address
 func IPAddr() (net.IP, error) {
@@ -17,4 +22,25 @@ func IPAddr() (net.IP, error) {
 		}
 	}
 	return nil, nil
+}
+
+// TrimBy trims the string with provided substring and repeat
+// it multiple times decided by the count.
+// ex.
+// TrimBy("/localhost/caches/abc.txt", "/", 2)
+// will get "caches/abc.txt"
+func TrimBy(str, substr string, count int) string {
+	tmp := 0
+
+	for {
+		if tmp == count {
+			break
+		}
+
+		index := strings.Index(str, substr)
+		str = str[index+1:]
+		tmp++
+	}
+
+	return str
 }

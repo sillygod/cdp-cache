@@ -1,9 +1,13 @@
 package influxlog
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
+	"strings"
 	"time"
+
+	"github.com/sillygod/cdp-cache/pkg/helper"
 
 	"github.com/caddyserver/caddy/v2"
 	influxdb2 "github.com/influxdata/influxdb-client-go"
@@ -18,17 +22,41 @@ type influxWriteCloser struct {
 	api influxdb2api.WriteAPI
 }
 
-func (i *influxWriteCloser) Write(b []byte) (int, error) {
+func (i *influxWriteCloser) write(b []byte) (int, error) {
+	// TODO: consider to do this in background worker
 	n := len(b)
 	content := string(b)
-	// TODO: parse the content {time} {level} {module} {messages}
-	// Remember to rewrite the function below in next PR.
-	fmt.Println(content)
-	tags := map[string]string{"ip": "135.22.5.3"}
-	fields := map[string]interface{}{"Country": "HI"}
-	p := influxdb2.NewPoint("syslog", tags, fields, time.Now())
+	// parse the content {time} {level} {module} {action} {messages}
+	caddy.Log().Named("influxlog will write").Debug(content)
+
+	var ts time.Time
+	var err error
+
+	tags := map[string]string{}
+	fields := map[string]interface{}{}
+	tokens := strings.Split(content, "\t")
+
+	if len(tokens) == 5 {
+		ts, err = time.Parse(helper.LogUTCTimeFormat, tokens[0])
+		if err != nil {
+			ts = time.Now()
+		}
+		err := json.Unmarshal([]byte(tokens[4]), &fields)
+		fmt.Println(tokens[4])
+		if err != nil {
+			fmt.Println(err)
+			return 0, err
+		}
+		fields["message"] = fmt.Sprintf("%s %s", tokens[3], tokens[4])
+	}
+
+	p := influxdb2.NewPoint("syslog", tags, fields, ts)
 	i.api.WritePoint(p)
 	return n, nil
+}
+
+func (i *influxWriteCloser) Write(b []byte) (int, error) {
+	return i.write(b)
 }
 
 func (i *influxWriteCloser) Close() error {

@@ -1,7 +1,35 @@
 * Influxdb Monitor Example
   
-Let's try to monitor our cache server with influxdb
+  keep notes for manually set the influxLog
 
-#+begin_src sh
-PROJECT_PATH=/app docker-compose --project-directory=./ -f example/influxdb_monitor/docker-compose.yml up
-#+end_src
+  #+begin_src go
+    func setupInfluxLog(key string, d *caddyfile.Dispenser, args []string) (json.RawMessage, error) {
+
+      mod, err := caddy.GetModule("caddy.logging.writers." + key)
+      if err != nil {
+        return nil, d.Errf("getting influxlog module '%s': '%v'", mod, err)
+      }
+
+      unm, ok := mod.New().(caddyfile.Unmarshaler)
+      if !ok {
+        return nil, d.Errf("influxlog module '%s' is not a Caddyfile unmarshaler", mod)
+      }
+
+      err = unm.UnmarshalCaddyfile(d.NewFromNextSegment())
+      if err != nil {
+        return nil, err
+      }
+
+      raw := caddyconfig.JSONModuleObject(unm, "mylog", "influxlog", nil)
+
+      return raw, nil
+    }
+  #+end_src
+  
+  Let's try to monitor our cache server with influxdb
+
+  #+begin_src sh
+    PROJECT_PATH=/app docker-compose --project-directory=./ -f example/influxdb_monitor/docker-compose.yml up
+  #+end_src
+
+  Note: I can't find any way to customize the log configuration for the ~include~, ~exclude~ or other detailed settings in the ~Caddyfile~. Therefore, I decide to use json config which is more configurable. 

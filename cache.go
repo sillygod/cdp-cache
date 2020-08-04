@@ -31,7 +31,7 @@ var (
 )
 
 // intend to mock for test
-var now = time.Now().UTC
+var now = func() time.Time { return time.Now().UTC() }
 
 // RuleMatcherType specifies the type of matching rule to cache.
 type RuleMatcherType string
@@ -431,7 +431,7 @@ func (h *HTTPCache) Get(key string, request *http.Request) (*Entry, bool) {
 	return nil, false
 }
 
-// Keys list the keys holded by this cache
+// Keys list the keys holden by this cache
 func (h *HTTPCache) Keys() []string {
 	keys := []string{}
 	for index, l := range h.entriesLock {

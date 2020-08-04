@@ -24,16 +24,22 @@ func (suite *RedisBackendTestSuite) SetupSuite() {
 		log.Fatal(err)
 	}
 
-	resource, err := pool.Run("redis", "5.0.9", []string{})
+	redisVersion := "5.0.9"
+	resource, err := pool.Run("redis", redisVersion, []string{})
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	suite.pool = pool
 	suite.resource = resource
-
 	port := resource.GetPort("6379/tcp")
-	InitRedisClient(fmt.Sprintf("localhost:%s", port), "", 0)
+
+	err = suite.pool.Retry(func() error {
+		return InitRedisClient(fmt.Sprintf("localhost:%s", port), "", 0)
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func (suite *RedisBackendTestSuite) TestParseRedisConfig() {

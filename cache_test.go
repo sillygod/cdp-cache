@@ -202,15 +202,54 @@ func (suite *EntryTestSuite) TearDownSuite() {
 type HTTPCacheTestSuite struct {
 	suite.Suite
 	config *Config
+	cache  *HTTPCache
 }
 
 func (suite *HTTPCacheTestSuite) SetupSuite() {
 	err := backends.InitGroupCacheRes(50 * 1024 * 1024)
 	suite.Nil(err)
 	suite.config = getDefaultConfig()
+	suite.cache = NewHTTPCache(suite.config)
 }
 
-// TODO: add http cache test
+func (suite *HTTPCacheTestSuite) TestGetNonExistEntry() {
+	req := makeRequest("/", http.Header{})
+	entry, exists := suite.cache.Get("abc", req)
+	suite.Nil(entry)
+	suite.False(exists)
+}
+
+func (suite *HTTPCacheTestSuite) TestGetExistEntry() {
+	req := makeRequest("/", http.Header{})
+	res := makeResponse(200, http.Header{})
+	entry := NewEntry("hello", req, res, suite.config)
+	suite.cache.Put(req, entry)
+
+	prevEntry, exists := suite.cache.Get("hello", req)
+	suite.Equal(prevEntry, entry)
+	suite.True(exists)
+}
+
+func (suite *HTTPCacheTestSuite) TestCleanEntry() {
+	req := makeRequest("/", http.Header{})
+	res := makeResponse(200, http.Header{})
+	key := "friday"
+
+	entry := NewEntry(key, req, res, suite.config)
+	suite.cache.Put(req, entry)
+
+	keyInKeys := false
+	keys := suite.cache.Keys()
+	for _, k := range keys {
+		if k == key {
+			keyInKeys = true
+		}
+	}
+	suite.True(keyInKeys)
+
+	err := suite.cache.Del(key)
+	suite.Nil(err)
+}
 
 func (suite *HTTPCacheTestSuite) TearDownSuite() {
 	err := backends.ReleaseGroupCacheRes()
@@ -219,6 +258,7 @@ func (suite *HTTPCacheTestSuite) TearDownSuite() {
 
 func TestCacheStatusTestSuite(t *testing.T) {
 	suite.Run(t, new(CacheStatusTestSuite))
+	suite.Run(t, new(HTTPCacheTestSuite))
 	suite.Run(t, new(RuleMatcherTestSuite))
 	suite.Run(t, new(EntryTestSuite))
 }

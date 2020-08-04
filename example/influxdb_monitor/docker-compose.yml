@@ -16,27 +16,26 @@ services:
     networks:
       - influxdata
 
-
     ports:
       - "8086:8086"
       - "8082:8082"
 
   # telegraf to collects the syslog 
-  telegraf:
-    image: telegraf:1.15.1
-    environment:
-      - HOSTNAME=songa-telegraf
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./example/influxdb_monitor/telegraf.conf:/etc/telegraf/telegraf.conf
+  # telegraf:
+  #   image: telegraf:1.15.1
+  #   environment:
+  #     - HOSTNAME=songa-telegraf
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #     - ./example/influxdb_monitor/telegraf.conf:/etc/telegraf/telegraf.conf
 
-    restart: always
+  #   restart: always
 
-    networks:
-      - influxdata
+  #   networks:
+  #     - influxdata
 
-    depends_on:
-      - influxdb
+  #   depends_on:
+  #     - influxdb
 
   chronograf:
     image: chronograf:1.8.4
@@ -54,28 +53,37 @@ services:
 
     depends_on:
       - influxdb
-      - telegraf
 
   # in the future add the grafana log panel
+  grafana:
+    image: grafana/grafana:7.1.1
+    volumes:
+      - grafana:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - influxdata
+    depends_on:
+      - influxdb
 
   # cdp to write the log as syslog
-  cdp: &cdp-source
-    image: golang:1.14.2
-    container_name: cdp
-    volumes:
-      - cdp:/go/
-      - go-build-cache:/root/.cache/go-build
-      - .:${PROJECT_PATH}
+  # cdp: &cdp-source
+  #   image: golang:1.14.2
+  #   container_name: cdp
+  #   volumes:
+  #     - cdp:/go/
+  #     - go-build-cache:/root/.cache/go-build
+  #     - .:${PROJECT_PATH}
 
-    command: >
-      sh -c "echo 'spin up caddy proxy cache...' &&
-      cd ${PROJECT_PATH} &&
-      go run $PROJECT_PATH/cmd/main.go run --config example/influxdb_monitor/Caddyfile"
+  #   command: >
+  #     sh -c "echo 'spin up caddy proxy cache...' &&
+  #     cd ${PROJECT_PATH} &&
+  #     go run $PROJECT_PATH/cmd/main.go run --config example/influxdb_monitor/Caddyfile"
 
-    ports:
-      - "9991:9991"
-    environment:
-      - PROJECT_PATH=${PROJECT_PATH}
+  #   ports:
+  #     - "9991:9991"
+  #   environment:
+  #     - PROJECT_PATH=${PROJECT_PATH}
 
 
 volumes:
@@ -83,6 +91,7 @@ volumes:
   go-build-cache:
   influxdb:
   chronograf:
+  grafana:
 
 networks:
   influxdata:
