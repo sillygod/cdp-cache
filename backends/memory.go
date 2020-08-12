@@ -3,6 +3,7 @@ package backends
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -11,7 +12,7 @@ import (
 	"time"
 
 	"github.com/caddyserver/caddy/v2"
-	"github.com/golang/groupcache"
+	"github.com/mailgun/groupcache/v2"
 	"github.com/sillygod/cdp-cache/pkg/helper"
 )
 
@@ -33,7 +34,10 @@ func NewNoPreCollectError(msg string) error {
 	return NoPreCollectError{Content: msg}
 }
 
-const getterCtxKey ctxKey = "getter"
+const (
+	getterCtxKey    ctxKey = "getter"
+	getterTTLCtxKey ctxKey = "getterTTL"
+)
 
 var (
 	groupName = "http_cache"
@@ -43,21 +47,22 @@ var (
 	srv       *http.Server
 )
 
-// InMemoryBackend saves the content into inmemory with the groupcache.
+// InMemoryBackend saves the content into memory with the groupcache.
 type InMemoryBackend struct {
 	Ctx              context.Context
 	Key              string
+	expiration       time.Time
 	content          bytes.Buffer
 	isContentWritten bool
 	cachedBytes      []byte
 }
 
-// GetGroupCachePool gets the groupcache's httpool
+// GetGroupCachePool gets the groupcache's httppool
 func GetGroupCachePool() *groupcache.HTTPPool {
 	return pool
 }
 
-// ReleaseGroupCacheRes releases the rousources the memory backend
+// ReleaseGroupCacheRes releases the resources the memory backend
 // collects
 func ReleaseGroupCacheRes() error {
 	if srv != nil {
@@ -120,7 +125,12 @@ func getter(ctx context.Context, key string, dest groupcache.Sink) error {
 		return NewNoPreCollectError("no precollect content")
 	}
 
-	if err := dest.SetBytes(p); err != nil {
+	ttl, ok := ctx.Value(getterTTLCtxKey).(time.Time)
+	if !ok {
+		return errors.New("no ttl provided")
+	}
+
+	if err := dest.SetBytes(p, ttl); err != nil {
 		return err
 	}
 
@@ -130,8 +140,11 @@ func getter(ctx context.Context, key string, dest groupcache.Sink) error {
 // NewInMemoryBackend get the singleton of groupcache
 func NewInMemoryBackend(ctx context.Context, key string, expiration time.Time) (Backend, error) {
 	// add the expiration time as the suffix of the key
-	i := &InMemoryBackend{Ctx: ctx}
-	// i.Key = i.composeKey(key, expiration)
+	i := &InMemoryBackend{
+		Ctx:        ctx,
+		expiration: expiration,
+	}
+
 	i.Key = key
 	return i, nil
 }
@@ -154,15 +167,16 @@ func (i *InMemoryBackend) Flush() error {
 
 // Clean performs the purge storage
 func (i *InMemoryBackend) Clean() error {
-	// NOTE: there is no way to del or update the cache in groupcache
-	// Therefore, I use the cache invalidation instead.
-	return nil
+	// NOTE: there is no way to del or update the cache in the official groupcache
+	// Therefore, I decide to use github.com/mailgun/groupcache/v2
+	return groupch.Remove(i.Ctx, i.Key)
 }
 
-// Close writeh the temp buffer's content to the groupcache
+// Close write the temp buffer's content to the groupcache
 func (i *InMemoryBackend) Close() error {
 	if i.isContentWritten {
 		i.Ctx = context.WithValue(i.Ctx, getterCtxKey, i.content.Bytes())
+		i.Ctx = context.WithValue(i.Ctx, getterTTLCtxKey, i.expiration)
 		err := groupch.Get(i.Ctx, i.Key, groupcache.AllocatingByteSliceSink(&i.cachedBytes))
 		if err != nil {
 			caddy.Log().Named("backend:memory").Error(err.Error())

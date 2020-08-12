@@ -48,27 +48,39 @@ func (suite *MemoryBackendTestSuite) TestWriteInCache() {
 func (suite *MemoryBackendTestSuite) TestReadExistingCacheInGroupCache() {
 
 	ctx := context.Background()
-	backend, err := NewInMemoryBackend(ctx, "hello", time.Now())
-	suite.Nil(err)
-
+	backend, err := NewInMemoryBackend(ctx, "hello", time.Now().Add(1*time.Minute))
+	suite.Assert().NoError(err)
 	content := []byte("hello world")
 	length, err := backend.Write(content)
-	suite.Nil(err)
+	suite.Assert().NoError(err)
 	suite.Equal(len(content), length)
 	backend.Close()
 
 	// new a InMemoryBackend with the same key and test getting cache content
 	// this case will happen when caddy restart or other scenario.
 	// The cache is in groupcache but the client doesn't has the correspond backend mapping
-	anotherBackend, err := NewInMemoryBackend(context.Background(), "hello", time.Now())
-	suite.Nil(err)
+	anotherBackend, err := NewInMemoryBackend(context.Background(), "hello", time.Now().Add(1*time.Minute))
+	suite.Assert().NoError(err)
 	reader, err := anotherBackend.GetReader()
-	suite.Nil(err)
+	suite.Assert().NoError(err)
 
 	result, err := ioutil.ReadAll(reader)
-	suite.Nil(err)
+	suite.Assert().NoError(err)
 	suite.Equal(result, content)
 
+}
+
+func (suite *MemoryBackendTestSuite) TestCleanCache() {
+	ctx := context.Background()
+	backend, err := NewInMemoryBackend(ctx, "be_cleaned_key", time.Now().Add(1*time.Minute))
+	suite.Assert().NoError(err)
+
+	err = backend.Clean()
+	suite.Assert().NoError(err)
+
+	_, err = backend.GetReader()
+	_, ok := err.(NoPreCollectError)
+	suite.True(ok)
 }
 
 func TestMemoryBackendTestSuite(t *testing.T) {

@@ -1,6 +1,7 @@
 package httpcache
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -8,6 +9,7 @@ import (
 	"io"
 	"math"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"sync"
@@ -28,6 +30,11 @@ var (
 	entries     []map[string][]*Entry
 	entriesLock []*sync.RWMutex
 	l           sync.RWMutex
+	keyBufPool  = sync.Pool{
+		New: func() interface{} {
+			return new(bytes.Buffer)
+		},
+	}
 )
 
 // intend to mock for test
@@ -43,7 +50,7 @@ const (
 	MatcherTypeHeader RuleMatcherType = "header"
 )
 
-// RuleMatcherRawWithType stores the marshal content for unmarshaling in provision stage
+// RuleMatcherRawWithType stores the marshal content for unmarshalling in provision stage
 type RuleMatcherRawWithType struct {
 	Type RuleMatcherType
 	Data json.RawMessage
@@ -54,7 +61,7 @@ type RuleMatcher interface {
 	matches(*http.Request, int, http.Header) bool
 }
 
-// PathRuleMatcher determines whether the reuqest's path is matched.
+// PathRuleMatcher determines whether the request's path is matched.
 type PathRuleMatcher struct {
 	Path string `json:"path"`
 }
@@ -274,8 +281,6 @@ type Entry struct {
 func NewEntry(key string, request *http.Request, response *Response, config *Config) *Entry {
 	isPublic, expiration := getCacheStatus(request, response, config)
 
-	fmt.Printf("the expiration time: %s, now is: %s \n", expiration, time.Now())
-
 	return &Entry{
 		isPublic:   isPublic,
 		key:        key,
@@ -346,17 +351,33 @@ func (e *Entry) IsFresh() bool {
 	return e.expiration.After(time.Now())
 }
 
+func (e *Entry) keyWithRespectVary() string {
+	// https://cloud.google.com/cdn/docs/caching#vary-headers
+	buf := keyBufPool.Get().(*bytes.Buffer)
+	buf.Reset()
+	buf.WriteString(e.key)
+
+	defer keyBufPool.Put(buf)
+
+	vary := e.Response.snapHeader.Get("Vary")
+	for _, header := range strings.Split(vary, ",") {
+		buf.WriteString(e.Request.Header.Get(header))
+	}
+
+	return url.PathEscape(buf.String())
+}
+
 func (e *Entry) setBackend(ctx context.Context, config *Config) error {
 	var backend backends.Backend
 	var err error
-	// I can give the context here?
+
 	switch config.Type {
 	case file:
 		backend, err = backends.NewFileBackend(config.Path)
 	case inMemory:
-		backend, err = backends.NewInMemoryBackend(ctx, e.key, e.expiration)
+		backend, err = backends.NewInMemoryBackend(ctx, e.keyWithRespectVary(), e.expiration)
 	case redis:
-		backend, err = backends.NewRedisBackend(ctx, e.key, e.expiration)
+		backend, err = backends.NewRedisBackend(ctx, e.keyWithRespectVary(), e.expiration)
 	}
 
 	e.Response.SetBody(backend)
@@ -371,7 +392,7 @@ type HTTPCache struct {
 	entriesLock      []*sync.RWMutex
 }
 
-// NewHTTPCache new a HTTPCache to hanle cache entries
+// NewHTTPCache new a HTTPCache to handle cache entries
 func NewHTTPCache(config *Config) *HTTPCache {
 	// TODO: how to handle when the bucket's num is changed
 	l.Lock()
@@ -434,6 +455,7 @@ func (h *HTTPCache) Get(key string, request *http.Request) (*Entry, bool) {
 // Keys list the keys holden by this cache
 func (h *HTTPCache) Keys() []string {
 	keys := []string{}
+
 	for index, l := range h.entriesLock {
 		l.RLock()
 		for k, v := range h.entries[index] {

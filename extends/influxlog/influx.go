@@ -44,7 +44,6 @@ func (i *influxWriteCloser) write(b []byte) (int, error) {
 		err := json.Unmarshal([]byte(tokens[4]), &fields)
 		fmt.Println(tokens[4])
 		if err != nil {
-			fmt.Println(err)
 			return 0, err
 		}
 		fields["message"] = fmt.Sprintf("%s %s", tokens[3], tokens[4])

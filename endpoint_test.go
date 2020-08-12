@@ -180,6 +180,6 @@ func (suite *CacheEndpointTestSuite) TestPurgeCache() {
 
 }
 
-func TestCacheEndpoingTestSuite(t *testing.T) {
+func TestCacheEndpotingTestSuite(t *testing.T) {
 	suite.Run(t, new(CacheEndpointTestSuite))
 }

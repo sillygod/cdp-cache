@@ -11,3 +11,10 @@ This will move the test data to the directory which will be served by Caddy. The
 #+begin_src sh
   caddy run --config [benchmark's Caddyfile]
 #+end_src
+
+** Plain to write some benchmarks to tuning the performance
+
+#+begin_src sh
+  go test -bench=. -benchmem -cpuprofile profile.out
+  go tool pprof profile.out (in the interactive mod, you can type web to open a web interface to see the graph)
+#+end_src

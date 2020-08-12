@@ -32,6 +32,7 @@
     header Cache-control "public"
     root * /tmp/caddy-benchmark
     file_server
+    encode gzip zstd
 
     log {
         level info

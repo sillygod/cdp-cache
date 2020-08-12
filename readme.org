@@ -182,9 +182,5 @@
 
 * Todo list
   
-  - [ ] add more tests (in progress)
-        In the same time, write some fragement benchmark to find out which part can be optimized
-        go test -bench=. -benchmem -cpuprofile profile.out
-        go tool pprof profile.out (in the interactive mod, you can type web to open a web interface to see the graph)
   - [ ] distributed cache (in progress)
   - [ ] more optimization..
