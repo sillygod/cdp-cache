@@ -221,7 +221,6 @@ func (h *Handler) Provision(ctx caddy.Context) error {
 	}
 
 	// load the guest module distributed
-	fmt.Println(string(h.DistributedRaw))
 	err = h.provisionDistributed(ctx)
 	if err != nil {
 		return err

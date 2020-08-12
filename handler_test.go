@@ -81,7 +81,7 @@ func (suite *HandlerProvisionTestSuite) TestProvisionDistributed() {
 	// NOTE: I know it's weird here but I want to ensure the part of function LoadModule
 	// works correctly. In this case, I don't set up the consul server so it will get
 	// connection error like "xxx no such host"
-	suite.Contains(err.Error(), "no such host")
+	suite.Contains(err.Error(), "http://consul:8500/v1/agent/service/register")
 }
 
 type DetermineShouldCacheTestSuite struct {

@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 	"time"
 
@@ -217,6 +218,19 @@ func (suite *HTTPCacheTestSuite) TestGetNonExistEntry() {
 	entry, exists := suite.cache.Get("abc", req)
 	suite.Nil(entry)
 	suite.False(exists)
+}
+
+func (suite *HTTPCacheTestSuite) TestKeyWithrespectVary() {
+	req := makeRequest("/", http.Header{
+		"accept-encoding": []string{"gzip, deflate, br"},
+	})
+	res := makeResponse(200, http.Header{
+		"Vary": []string{"Accept-Encoding"},
+	})
+	e := NewEntry("hello", req, res, suite.config)
+	key := e.keyWithRespectVary()
+	expected := "hello" + url.PathEscape("gzip, deflate, br")
+	suite.Equal(expected, key)
 }
 
 func (suite *HTTPCacheTestSuite) TestGetExistEntry() {
