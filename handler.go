@@ -138,14 +138,7 @@ func (Handler) CaddyModule() caddy.ModuleInfo {
 	}
 }
 
-// Provision setups the configs
-func (h *Handler) Provision(ctx caddy.Context) error {
-
-	h.logger = ctx.Logger(h)
-
-	if h.Config == nil {
-		h.Config = getDefaultConfig()
-	}
+func (h *Handler) provisionRuleMatchers() error {
 
 	for _, raw := range h.Config.RuleMatchersRaws {
 
@@ -171,6 +164,35 @@ func (h *Handler) Provision(ctx caddy.Context) error {
 			h.Config.RuleMatchers = append(h.Config.RuleMatchers, content)
 		}
 
+	}
+
+	return nil
+}
+
+func (h *Handler) provisionDistributed(ctx caddy.Context) error {
+	if h.DistributedRaw != nil {
+		val, err := ctx.LoadModule(h, "DistributedRaw") // this will call provision
+		if err != nil {
+			return fmt.Errorf("loading distributed module: %s", err.Error())
+		}
+		h.Distributed = val.(*distributed.ConsulService)
+	}
+
+	return nil
+}
+
+// Provision setups the configs
+func (h *Handler) Provision(ctx caddy.Context) error {
+
+	h.logger = ctx.Logger(h)
+
+	if h.Config == nil {
+		h.Config = getDefaultConfig()
+	}
+
+	err := h.provisionRuleMatchers()
+	if err != nil {
+		return err
 	}
 
 	// NOTE: A dirty work to assign the config and cache to global vars
@@ -199,25 +221,13 @@ func (h *Handler) Provision(ctx caddy.Context) error {
 	}
 
 	// load the guest module distributed
-	if h.DistributedRaw != nil {
-		val, err := ctx.LoadModule(h, "DistributedRaw") // this will call provision
-		if err != nil {
-			return fmt.Errorf("loading distributed module: %s", err.Error())
-		}
-		h.Distributed = val.(*distributed.ConsulService)
-
+	fmt.Println(string(h.DistributedRaw))
+	err = h.provisionDistributed(ctx)
+	if err != nil {
+		return err
 	}
 
-	// if h.InfluxLogRaw != nil {
-	// 	val, err := ctx.LoadModule(h, "InfluxLogRaw")
-	// 	if err != nil {
-	// 		return fmt.Errorf("loading influxlog module: %s", err.Error())
-	// 	}
-	// 	h.InfluxLog = val.(*influxlog.InfluxLogWriter)
-	// }
-
 	config = h.Config
-
 	return nil
 }
 
@@ -228,7 +238,12 @@ func (h *Handler) Validate() error {
 
 // Cleanup release the resources
 func (h *Handler) Cleanup() error {
-	err := backends.ReleaseGroupCacheRes()
+	var err error
+
+	if h.Config.Type == inMemory {
+		err = backends.ReleaseGroupCacheRes()
+	}
+
 	return err
 }
 

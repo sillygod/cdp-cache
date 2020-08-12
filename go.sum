@@ -566,6 +566,8 @@ github.com/lunixbochs/vtclean v1.0.0/go.mod h1:pHhQNgMf3btfWnGBVipUOjRYhoOsdGqdm
 github.com/magiconair/properties v1.7.6/go.mod h1:PppfXfuXeibc/6YijjN8zIbojt8czPbwD3XqdrwzmxQ=
 github.com/magiconair/properties v1.8.0/go.mod h1:PppfXfuXeibc/6YijjN8zIbojt8czPbwD3XqdrwzmxQ=
 github.com/magiconair/properties v1.8.1/go.mod h1:PppfXfuXeibc/6YijjN8zIbojt8czPbwD3XqdrwzmxQ=
+github.com/mailgun/groupcache/v2 v2.2.0 h1:vWi1ROSiYZcstf5ZRtZ+iD6sVcWxOM4dwg52XkxwBLc=
+github.com/mailgun/groupcache/v2 v2.2.0/go.mod h1:E28iTa7lFjf5/t1sSJwnCtERqmOgSRcWocJTYUPT2BA=
 github.com/mailru/easyjson v0.0.0-20190312143242-1de009706dbe/go.mod h1:C1wdFJiN94OJF2b5HbByQZoLdCWB1Yqtg26g4irojpc=
 github.com/manifoldco/promptui v0.3.1 h1:BxqNa7q1hVHXIXy3iupJMkXYS3aHhbubJWv2Jmg6x64=
 github.com/manifoldco/promptui v0.3.1/go.mod h1:zoCNXiJnyM03LlBgTsWv8mq28s7aTC71UgKasqRJHww=

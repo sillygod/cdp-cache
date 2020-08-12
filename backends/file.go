@@ -119,7 +119,7 @@ func NewSubscription() *Subscription {
 	}
 }
 
-// NewSubscriber add a new subscrber in the subscribers container
+// NewSubscriber add a new subscriber in the subscribers container
 func (s *Subscription) NewSubscriber() <-chan int {
 	s.closedLock.Lock()
 	defer s.closedLock.Unlock()

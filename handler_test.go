@@ -5,6 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/caddyserver/caddy/v2"
 	"github.com/caddyserver/caddy/v2/modules/caddyhttp"
 	"github.com/stretchr/testify/suite"
 )
@@ -27,6 +28,60 @@ func (suite *CacheKeyTemplatingTestSuite) TestKeyReplacer() {
 	result := repl.ReplaceKnown(defaultCacheKeyTemplate, "")
 
 	suite.Equal("GET example.com/songa?age=20&class=A", result)
+}
+
+type HandlerProvisionTestSuite struct {
+	suite.Suite
+	handler *Handler
+}
+
+func (suite *HandlerProvisionTestSuite) SetupSuite() {
+	suite.handler = new(Handler)
+	if suite.handler.Config == nil {
+		suite.handler.Config = getDefaultConfig()
+	}
+
+	suite.handler.Config.RuleMatchersRaws = []RuleMatcherRawWithType{
+		{
+			Type: MatcherTypePath,
+			Data: []byte(`{"path": "/"}`),
+		},
+		{
+			Type: MatcherTypeHeader,
+			Data: []byte(`{"header": "Content-Type", "value": ["image/jpg"]}`),
+		},
+	}
+}
+
+func (suite *HandlerProvisionTestSuite) TearDownSuite() {
+}
+
+func (suite *HandlerProvisionTestSuite) TestProvisionRuleMatchers() {
+	err := suite.handler.provisionRuleMatchers()
+	suite.Assert().NoError(err)
+}
+
+func (suite *HandlerProvisionTestSuite) TestProvisionDistributed() {
+
+	suite.handler.DistributedRaw = []byte(`
+	{
+		"Catalog":null,
+		"Client":null,
+		"Config":{
+			"addr":"consul:8500",
+			"health_url":":7777/health",
+			"service_name":"cache_server"
+		},
+		"KV":null,
+		"ServiceIDs":null,
+		"distributed":"consul"}
+	`)
+
+	err := suite.handler.provisionDistributed(caddy.Context{})
+	// NOTE: I know it's weird here but I want to ensure the part of function LoadModule
+	// works correctly. In this case, I don't set up the consul server so it will get
+	// connection error like "xxx no such host"
+	suite.Contains(err.Error(), "no such host")
 }
 
 type DetermineShouldCacheTestSuite struct {
@@ -69,5 +124,5 @@ func (suite *DetermineShouldCacheTestSuite) TestNonGETOrHeadMethod() {
 func TestCacheKeyTemplatingTestSuite(t *testing.T) {
 	suite.Run(t, new(CacheKeyTemplatingTestSuite))
 	suite.Run(t, new(DetermineShouldCacheTestSuite))
-
+	suite.Run(t, new(HandlerProvisionTestSuite))
 }

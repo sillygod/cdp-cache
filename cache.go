@@ -43,7 +43,7 @@ const (
 	MatcherTypeHeader RuleMatcherType = "header"
 )
 
-// RuleMatcherRawWithType stores the marshal content for unmarshaling in provision stage
+// RuleMatcherRawWithType stores the marshal content for unmarshalling in provision stage
 type RuleMatcherRawWithType struct {
 	Type RuleMatcherType
 	Data json.RawMessage
@@ -54,7 +54,7 @@ type RuleMatcher interface {
 	matches(*http.Request, int, http.Header) bool
 }
 
-// PathRuleMatcher determines whether the reuqest's path is matched.
+// PathRuleMatcher determines whether the request's path is matched.
 type PathRuleMatcher struct {
 	Path string `json:"path"`
 }
@@ -371,7 +371,7 @@ type HTTPCache struct {
 	entriesLock      []*sync.RWMutex
 }
 
-// NewHTTPCache new a HTTPCache to hanle cache entries
+// NewHTTPCache new a HTTPCache to handle cache entries
 func NewHTTPCache(config *Config) *HTTPCache {
 	// TODO: how to handle when the bucket's num is changed
 	l.Lock()

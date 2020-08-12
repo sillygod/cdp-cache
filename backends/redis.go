@@ -24,7 +24,7 @@ type RedisBackend struct {
 	expiration time.Time
 }
 
-// ParseRedisConfig prases the connection settings string from the caddyfile
+// ParseRedisConfig parses the connection settings string from the caddyfile
 func ParseRedisConfig(connSetting string) (*redis.Options, error) {
 	var err error
 	args := strings.Split(connSetting, " ")
@@ -50,7 +50,7 @@ func ParseRedisConfig(connSetting string) (*redis.Options, error) {
 	}, nil
 }
 
-// InitRedisClient init the client for the redis
+// InitRedisClient inits the client for the redis
 func InitRedisClient(addr, password string, db int) error {
 	l.Lock()
 	defer l.Unlock()
