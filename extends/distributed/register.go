@@ -2,11 +2,13 @@ package distributed
 
 import (
 	"fmt"
+	"reflect"
+	"strings"
 	"sync"
-	"time"
 
 	"github.com/caddyserver/caddy/v2"
 	"github.com/hashicorp/consul/api"
+	"github.com/hashicorp/consul/api/watch"
 	"github.com/sillygod/cdp-cache/backends"
 	"github.com/sillygod/cdp-cache/pkg/helper"
 )
@@ -17,8 +19,40 @@ var (
 
 func init() {
 	caddy.RegisterModule(ConsulService{})
-
 }
+
+type watchKind string
+
+// type specifies which watch func to be used.
+// Refer from the part of the consul's source code.
+
+// watchFuncFactory = map[string]watchFactory{
+//  "key":           keyWatch,
+// 	"keyprefix":     keyPrefixWatch,
+// 	"services":      servicesWatch,
+// 	"nodes":         nodesWatch,
+// 	"service":       serviceWatch,
+// 	"checks":        checksWatch,
+// 	"event":         eventWatch,
+// 	"connect_roots": connectRootsWatch,
+// 	"connect_leaf":  connectLeafWatch,
+// 	"agent_service": agentServiceWatch,
+// }
+
+const (
+	keyWatchKind          watchKind = "key"
+	keyPrefixWatchKind    watchKind = "keyprefix"
+	servicesWatchKind     watchKind = "services"
+	nodeWatchKind         watchKind = "nodes"
+	serviceWatchKind      watchKind = "service"
+	checksWatchKind       watchKind = "checks"
+	eventWatchKind        watchKind = "event"
+	connectRootsWatchKind watchKind = "connect_roots"
+	connectLeafWatchKind  watchKind = "connect_leaf"
+	agentServiceWatchKind watchKind = "agent_service"
+)
+
+type watchCallback func(data interface{}) error
 
 // ConsulService handles the client to interact with the consul agent
 type ConsulService struct {
@@ -82,14 +116,14 @@ func (c *ConsulService) Provision(ctx caddy.Context) error {
 		return err
 	}
 
-	idStr := "cache_server:" + ip.String()
+	idStr := fmt.Sprintf("%s:%s", c.Config.ServiceName, ip.String())
 	c.ServiceIDs = append(c.ServiceIDs, idStr)
 
 	healthURL := fmt.Sprintf("http://%s%s", ip.String(), c.Config.HealthURL)
 
 	reg := &api.AgentServiceRegistration{
 		ID:      idStr,
-		Name:    "cache_server",
+		Name:    c.Config.ServiceName,
 		Address: ip.String(),
 		Port:    7777,
 		Check: &api.AgentServiceCheck{
@@ -108,23 +142,117 @@ func (c *ConsulService) Provision(ctx caddy.Context) error {
 		return err
 	}
 
-	// a routine to update the connection peers
-	// TODO: research about the consul's event maybe we can use it
-	// to replace this routine
-	go func() {
-		t := time.NewTicker(time.Second * 20)
-		for {
-			select {
-			case <-t.C:
-				peers, err := c.GetPeers()
-				if err != nil {
-					caddy.Log().Named("distributed cache").Error(fmt.Sprintf("get peer error: %s", err.Error()))
-				}
+	// Register some watch functions ex. health check, key-value store etc.
+	err = c.RegisterWatches()
+	if err != nil {
+		return err
+	}
 
-				pool := backends.GetGroupCachePool()
-				pool.Set(peers...)
-				caddy.Log().Named("distributed cache").Debug(fmt.Sprintf("Peers: %s", peers))
-			}
+	return nil
+}
+
+// RegisterWatches registers the specified watches
+func (c *ConsulService) RegisterWatches() error {
+	var err error
+
+	handlers := []struct {
+		kind     watchKind
+		pg       map[string]interface{}
+		callback watchCallback
+	}{
+		{
+			kind:     checksWatchKind,
+			pg:       c.getParams(checksWatchKind),
+			callback: c.handleChecks,
+		},
+		{
+			kind:     keyWatchKind,
+			pg:       c.getKeysParams("caddy_config"),
+			callback: c.handleConfigChanged,
+		},
+		{
+			kind:     keyPrefixWatchKind,
+			pg:       c.getKeyPrefixParams("cache_key"),
+			callback: c.handleDeleteKey,
+		},
+	}
+
+	for _, h := range handlers {
+		err = c.RegisterWatch(h.kind, h.pg, h.callback)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (c *ConsulService) handleDeleteKey(data interface{}) error {
+	return nil
+}
+
+func (c *ConsulService) handleConfigChanged(data interface{}) error {
+	return nil
+}
+
+func (c *ConsulService) handleChecks(data interface{}) error {
+	peers := []string{}
+
+	checks, ok := data.([]*api.HealthCheck)
+	if !ok {
+		return fmt.Errorf("non expected data type: %s", reflect.TypeOf(data))
+	}
+
+	for _, check := range checks {
+
+		if check.Status == "passing" {
+			peer_ip := strings.Split(check.ServiceID, ":")[1]
+			address := fmt.Sprintf("http://%s", peer_ip)
+			peers = append(peers, address)
+		}
+	}
+
+	pool := backends.GetGroupCachePool()
+	pool.Set(peers...)
+	caddy.Log().Named("distributed cache").Debug(fmt.Sprintf("Peers: %s", peers))
+
+	return nil
+}
+
+func (c *ConsulService) getKeyPrefixParams(keyPrefix string) map[string]interface{} {
+	params := c.getParams(keyPrefixWatchKind)
+	params["keyprefix"] = keyPrefix
+	return params
+}
+
+func (c *ConsulService) getKeysParams(key string) map[string]interface{} {
+	params := c.getParams(keyWatchKind)
+	params["key"] = key
+	return params
+}
+
+func (c *ConsulService) getParams(kind watchKind) map[string]interface{} {
+	params := map[string]interface{}{}
+	params["type"] = kind
+	params["service"] = c.Config.ServiceName
+	return params
+}
+
+func (c *ConsulService) RegisterWatch(kind watchKind, params map[string]interface{}, fn watchCallback) error {
+	plan, err := watch.Parse(params)
+	if err != nil {
+		return err
+	}
+
+	// the result will vary with the different the watch type
+	plan.Handler = func(index uint64, result interface{}) {
+		fn(result)
+	}
+
+	go func() {
+		err := plan.Run(c.Config.Addr)
+		if err != nil {
+			plan.Stop()
 		}
 	}()
 
@@ -137,7 +265,7 @@ func (c *ConsulService) GetPeers() ([]string, error) {
 	peerMap := make(map[string]struct{})
 	peers := []string{}
 
-	name := "cache_server"
+	name := c.Config.ServiceName
 	serviceData, _, err := c.Client.Health().Service(name, "", true, &api.QueryOptions{})
 	if err != nil {
 		return nil, err

@@ -283,7 +283,6 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyht
 	lock := h.URLLocks.Acquire(key)
 	defer lock.Unlock()
 
-	// Lookup correct entry
 	previousEntry, exists := h.Cache.Get(key, r)
 
 	// First case: CACHE HIT
