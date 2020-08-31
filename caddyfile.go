@@ -49,17 +49,17 @@ var (
 )
 
 const (
-	keyStatusHeader          = "status_header"
-	keyLockTimeout           = "lock_timeout"
-	keyDefaultMaxAge         = "default_max_age"
-	keyPath                  = "path"
-	keyMatchHeader           = "match_header"
-	keyMatchPath             = "match_path"
-	keyCacheKey              = "cache_key"
-	keyCacheBucketsNum       = "cache_bucket_num"
-	keyCacheMaxMemorySize    = "cache_max_memory_size"
-	keyCacheType             = "cache_type"
-	keyRedisConnctionSetting = "redis_connection_setting"
+	keyStatusHeader           = "status_header"
+	keyLockTimeout            = "lock_timeout"
+	keyDefaultMaxAge          = "default_max_age"
+	keyPath                   = "path"
+	keyMatchHeader            = "match_header"
+	keyMatchPath              = "match_path"
+	keyCacheKey               = "cache_key"
+	keyCacheBucketsNum        = "cache_bucket_num"
+	keyCacheMaxMemorySize     = "cache_max_memory_size"
+	keyCacheType              = "cache_type"
+	keyRedisConnectionSetting = "redis_connection_setting"
 	// format: addr db password or addr db or addr
 	// ex.
 	// localhost:6789 0 => connect without password. only index and host:port provided
@@ -147,7 +147,7 @@ func (h *Handler) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 				}
 				config.StatusHeader = args[0]
 
-			case keyRedisConnctionSetting:
+			case keyRedisConnectionSetting:
 				if len(args) > 3 {
 					return d.Err("Invalid usage of redis_connection_setting in cache config.")
 				}

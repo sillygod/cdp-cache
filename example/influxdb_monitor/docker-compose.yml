@@ -5,7 +5,7 @@ services:
     image: influxdb:1.8.1
     volumes:
       - influxdb:/var/lib/influxdb
-      - ./example/influxdb_monitor/influxdb.conf:/etc/influxdb/influxdb.conf
+      - example/influxdb_monitor/influxdb.conf:/etc/influxdb/influxdb.conf
     environment:
       - INFLUXDB_ADMIN_USER=admin
       - INFLUXDB_ADMIN_PASSWORD=pass1234

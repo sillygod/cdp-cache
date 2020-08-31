@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/caddyserver/caddy/v2"
+	"github.com/google/uuid"
 	"github.com/hashicorp/consul/api"
 	"github.com/hashicorp/consul/api/watch"
 	"github.com/sillygod/cdp-cache/backends"
@@ -87,6 +88,16 @@ func (c *ConsulService) Cleanup() error {
 	return nil
 }
 
+func genServiceID(serviceName string, ip string) string {
+	uid := uuid.New()
+	idStr := fmt.Sprintf("%s:%s:%s", serviceName, ip, uid.String())
+	return idStr
+}
+
+func getIPFromServiceID(serviceID string) string {
+	return strings.Split(serviceID, ":")[1]
+}
+
 // Provision init the consul's agent and establish connection
 func (c *ConsulService) Provision(ctx caddy.Context) error {
 	// init the consul api client here
@@ -116,7 +127,7 @@ func (c *ConsulService) Provision(ctx caddy.Context) error {
 		return err
 	}
 
-	idStr := fmt.Sprintf("%s:%s", c.Config.ServiceName, ip.String())
+	idStr := genServiceID(c.Config.ServiceName, ip.String())
 	c.ServiceIDs = append(c.ServiceIDs, idStr)
 
 	healthURL := fmt.Sprintf("http://%s%s", ip.String(), c.Config.HealthURL)
@@ -156,29 +167,25 @@ func (c *ConsulService) RegisterWatches() error {
 	var err error
 
 	handlers := []struct {
-		kind     watchKind
 		pg       map[string]interface{}
 		callback watchCallback
 	}{
 		{
-			kind:     checksWatchKind,
-			pg:       c.getParams(checksWatchKind),
+			pg:       c.getChecksParams(),
 			callback: c.handleChecks,
 		},
 		{
-			kind:     keyWatchKind,
 			pg:       c.getKeysParams("caddy_config"),
 			callback: c.handleConfigChanged,
 		},
 		{
-			kind:     keyPrefixWatchKind,
 			pg:       c.getKeyPrefixParams("cache_key"),
 			callback: c.handleDeleteKey,
 		},
 	}
 
 	for _, h := range handlers {
-		err = c.RegisterWatch(h.kind, h.pg, h.callback)
+		err = c.RegisterWatch(h.pg, h.callback)
 		if err != nil {
 			return err
 		}
@@ -192,7 +199,13 @@ func (c *ConsulService) handleDeleteKey(data interface{}) error {
 }
 
 func (c *ConsulService) handleConfigChanged(data interface{}) error {
-	return nil
+	kv, ok := data.(*api.KVPair)
+	if !ok {
+		return fmt.Errorf("non expected data type: %s", reflect.TypeOf(data))
+	}
+
+	// presume the valus is json format
+	return caddy.Load(kv.Value, false)
 }
 
 func (c *ConsulService) handleChecks(data interface{}) error {
@@ -206,7 +219,7 @@ func (c *ConsulService) handleChecks(data interface{}) error {
 	for _, check := range checks {
 
 		if check.Status == "passing" {
-			peer_ip := strings.Split(check.ServiceID, ":")[1]
+			peer_ip := getIPFromServiceID(check.ServiceID)
 			address := fmt.Sprintf("http://%s", peer_ip)
 			peers = append(peers, address)
 		}
@@ -221,7 +234,7 @@ func (c *ConsulService) handleChecks(data interface{}) error {
 
 func (c *ConsulService) getKeyPrefixParams(keyPrefix string) map[string]interface{} {
 	params := c.getParams(keyPrefixWatchKind)
-	params["keyprefix"] = keyPrefix
+	params["prefix"] = keyPrefix
 	return params
 }
 
@@ -231,14 +244,19 @@ func (c *ConsulService) getKeysParams(key string) map[string]interface{} {
 	return params
 }
 
-func (c *ConsulService) getParams(kind watchKind) map[string]interface{} {
-	params := map[string]interface{}{}
-	params["type"] = kind
+func (c *ConsulService) getChecksParams() map[string]interface{} {
+	params := c.getParams(checksWatchKind)
 	params["service"] = c.Config.ServiceName
 	return params
 }
 
-func (c *ConsulService) RegisterWatch(kind watchKind, params map[string]interface{}, fn watchCallback) error {
+func (c *ConsulService) getParams(kind watchKind) map[string]interface{} {
+	params := map[string]interface{}{}
+	params["type"] = string(kind) // consul will ensure the type to be string
+	return params
+}
+
+func (c *ConsulService) RegisterWatch(params map[string]interface{}, fn watchCallback) error {
 	plan, err := watch.Parse(params)
 	if err != nil {
 		return err

@@ -25,7 +25,7 @@ func (suite *CaddyfileTestSuite) TestSettingFileCacheType() {
 			cache_key "{http.request.method} {http.request.host}{http.request.uri.path} {http.request.uri.query}"
 			cache_bucket_num 1024
 			match_header Content-Type image/png
-			match_header X-Forwarded-For 144.30.20
+			match_header X-Forwarded-For 144.30.20.10
 		}
 		`),
 	}
@@ -51,6 +51,17 @@ func (suite *CaddyfileTestSuite) TestErrorSetMultipleCacheType() {
 	suite.Error(err, "it should raise the invalid usage of cache_type")
 }
 
+func (suite *CaddyfileTestSuite) TestInvalidCacheStatusHeader() {
+	h := httpcaddyfile.Helper{
+		Dispenser: caddyfile.NewTestDispenser(`
+		http_cache {
+			status_header X-Cache-Status A-Status	
+		}`),
+	}
+	_, err := parseCaddyfile(h)
+	suite.Error(err, "it should raise the invalid usage of status_header")
+}
+
 func (suite *CaddyfileTestSuite) TestInvalidParameter() {
 	h := httpcaddyfile.Helper{
 		Dispenser: caddyfile.NewTestDispenser(`
@@ -74,6 +85,18 @@ func (suite *CaddyfileTestSuite) TestRedisConnectionSetting() {
 
 	_, err := parseCaddyfile(h)
 	suite.Error(err, "invalid usage of redis_connection_setting in cache config.")
+
+	h = httpcaddyfile.Helper{
+		Dispenser: caddyfile.NewTestDispenser(`
+        http_cache {
+            redis_connection_setting localhost:6379 2
+        }
+        `),
+	}
+
+	_, err = parseCaddyfile(h)
+	suite.Assert().NoError(err)
+
 }
 
 func (suite *CaddyfileTestSuite) TestDistributedCacheConfig() {
