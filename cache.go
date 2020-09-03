@@ -18,6 +18,7 @@ import (
 	"github.com/caddyserver/caddy/v2"
 	"github.com/pquerna/cachecontrol/cacheobject"
 	"github.com/sillygod/cdp-cache/backends"
+	"github.com/sillygod/cdp-cache/extends/distributed"
 )
 
 // Module lifecycle
@@ -390,10 +391,11 @@ type HTTPCache struct {
 	cacheBucketsNum  int
 	entries          []map[string][]*Entry
 	entriesLock      []*sync.RWMutex
+	isDistributed    bool
 }
 
 // NewHTTPCache new a HTTPCache to handle cache entries
-func NewHTTPCache(config *Config) *HTTPCache {
+func NewHTTPCache(config *Config, distributedOn bool) *HTTPCache {
 	// TODO: how to handle when the bucket's num is changed
 	l.Lock()
 	defer l.Unlock()
@@ -417,6 +419,7 @@ func NewHTTPCache(config *Config) *HTTPCache {
 		cacheBucketsNum:  config.CacheBucketsNum,
 		entries:          entries,
 		entriesLock:      entriesLock,
+		isDistributed:    distributedOn,
 	}
 
 }
@@ -515,6 +518,39 @@ func (h *HTTPCache) Put(request *http.Request, entry *Entry) {
 	h.entries[bucket][key] = append(h.entries[bucket][key], entry)
 }
 
+func (h *HTTPCache) distributedClean(key string, entry *Entry) error {
+	// implement a simple Leader Election system
+	// acquire a distributed lock here if the distributed mode on
+	dl, err := distributed.NewDistributedLock(key)
+	if err != nil {
+		return err
+	}
+
+	leaderCh, err := dl.Lock()
+	if err != nil {
+		return nil
+	}
+
+	if leaderCh == nil {
+		dl.Unlock()
+		return nil
+	}
+
+	select {
+	case <-leaderCh:
+	default:
+		// do clean entry if this node is leader
+		caddy.Log().Named("distributed cache").Debug("perform clean entry")
+		err = entry.Clean()
+		// sleep a little time wait for other nodes performing deleting cache
+		time.Sleep(3 * time.Second)
+	}
+
+	dl.Unlock()
+
+	return err
+}
+
 func (h *HTTPCache) cleanEntry(entry *Entry) error {
 	key := entry.Key()
 	bucket := h.getBucketIndexForKey(key)
@@ -525,7 +561,10 @@ func (h *HTTPCache) cleanEntry(entry *Entry) error {
 	for i, otherEntry := range h.entries[bucket][key] {
 		if entry == otherEntry {
 			h.entries[bucket][key] = append(h.entries[bucket][key][:i], h.entries[bucket][key][i+1:]...)
-			return entry.Clean()
+			if !h.isDistributed {
+				return entry.Clean()
+			}
+			return h.distributedClean(key, entry)
 		}
 	}
 

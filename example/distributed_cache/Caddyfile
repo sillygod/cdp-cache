@@ -11,6 +11,7 @@
 
     http_cache {
         cache_type in_memory 
+        default_max_age 3m
         match_path /
 
         distributed consul {

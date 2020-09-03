@@ -8,6 +8,7 @@ require (
 	github.com/cenkalti/backoff/v3 v3.2.2 // indirect
 	github.com/containerd/continuity v0.0.0-20200710164510-efbc4488d8fe // indirect
 	github.com/go-redis/redis v6.15.8+incompatible
+	github.com/google/uuid v1.1.1
 	github.com/hashicorp/consul/api v1.5.0
 	github.com/hashicorp/go-hclog v0.14.1 // indirect
 	github.com/hashicorp/go-immutable-radix v1.2.0 // indirect

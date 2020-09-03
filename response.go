@@ -9,8 +9,7 @@ import (
 	"github.com/sillygod/cdp-cache/backends"
 )
 
-// TODO: caddy2 provide a copyheader function. Maybe, we
-// can use that instread
+// copyHeaders copy the header from one to another
 func copyHeaders(from http.Header, to http.Header) {
 	for k, values := range from {
 		for _, v := range values {

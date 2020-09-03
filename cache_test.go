@@ -210,7 +210,7 @@ func (suite *HTTPCacheTestSuite) SetupSuite() {
 	err := backends.InitGroupCacheRes(50 * 1024 * 1024)
 	suite.Nil(err)
 	suite.config = getDefaultConfig()
-	suite.cache = NewHTTPCache(suite.config)
+	suite.cache = NewHTTPCache(suite.config, false)
 }
 
 func (suite *HTTPCacheTestSuite) TestGetNonExistEntry() {

@@ -84,6 +84,16 @@ func (suite *HandlerProvisionTestSuite) TestProvisionDistributed() {
 	suite.Contains(err.Error(), "http://consul:8500/v1/agent/service/register")
 }
 
+func (suite *HandlerProvisionTestSuite) TestProvisionRedisBackend() {
+	suite.handler.Config.Type = redis
+	suite.handler.Config.RedisConnectionSetting = "localhost:6379"
+	err := suite.handler.provisionRedisCache()
+
+	// In this case, it will encounter a dial error because I don't
+	// provide a running redis server.
+	suite.Assert().Error(err)
+}
+
 type DetermineShouldCacheTestSuite struct {
 	suite.Suite
 }

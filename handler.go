@@ -4,14 +4,18 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
+	"strings"
 	"time"
 
 	"net/http"
 
 	"github.com/caddyserver/caddy/v2"
 	"github.com/caddyserver/caddy/v2/modules/caddyhttp"
+	"github.com/hashicorp/consul/api"
 	"github.com/sillygod/cdp-cache/backends"
 	"github.com/sillygod/cdp-cache/extends/distributed"
+	"github.com/sillygod/cdp-cache/pkg/helper"
 	"go.uber.org/zap"
 )
 
@@ -169,8 +173,52 @@ func (h *Handler) provisionRuleMatchers() error {
 	return nil
 }
 
+func handleDeleteKey(data interface{}) error {
+	// the type is api.KVPairs,
+	// https://learn.hashicorp.com/tutorials/consul/distributed-semaphore?in=consul/developer-configuration
+	// implement a distributed lock to handle del
+	kvs, ok := data.(api.KVPairs)
+	if !ok {
+		return fmt.Errorf("non expected data type: %s", reflect.TypeOf(data))
+	}
+
+	for _, kv := range kvs {
+		myIP, _ := helper.IPAddr()
+		ip := string(kv.Value)
+
+		// and to exclude self-trigger event
+		if kv.Session != "" && ip != myIP.String() {
+
+			caddy.Log().Named("distributed cache").
+				Debug(fmt.Sprintf("perform cache delete: ip: %s=%s , content: %+v\n", ip, myIP.String(), kv))
+
+			key := kv.Key
+
+			// handle the dispatching delete key event, need to trim the prefix
+			// to get the original key
+			if strings.HasPrefix(kv.Key, distributed.Keyprefix) {
+				key = strings.TrimLeft(kv.Key, distributed.Keyprefix+"/")
+			}
+
+			cache := getHandlerCache()
+			cache.Del(key)
+		}
+	}
+
+	return nil
+}
+
 func (h *Handler) provisionDistributed(ctx caddy.Context) error {
 	if h.DistributedRaw != nil {
+
+		// Register the watch handlers before the distributed module is provisioned
+		wh := distributed.WatchHandler{
+			Pg:       distributed.GetKeyPrefixParams(distributed.Keyprefix),
+			Callback: handleDeleteKey,
+		}
+
+		distributed.RegisterWatchHandler(wh)
+
 		val, err := ctx.LoadModule(h, "DistributedRaw") // this will call provision
 		if err != nil {
 			return fmt.Errorf("loading distributed module: %s", err.Error())
@@ -198,7 +246,8 @@ func (h *Handler) Provision(ctx caddy.Context) error {
 	// NOTE: A dirty work to assign the config and cache to global vars
 	// There will be the corresponding functions to get each of them.
 	// Therefore, we can call its Del to purge the cache via the admin interface
-	cache = NewHTTPCache(h.Config)
+	distributedOn := h.DistributedRaw != nil
+	cache = NewHTTPCache(h.Config, distributedOn)
 	h.Cache = cache
 	h.URLLocks = NewURLLock(h.Config)
 
@@ -210,14 +259,7 @@ func (h *Handler) Provision(ctx caddy.Context) error {
 		}
 
 	case redis:
-		opts, err := backends.ParseRedisConfig(h.Config.RedisConnectionSetting)
-		if err != nil {
-			return err
-		}
-
-		if err := backends.InitRedisClient(opts.Addr, opts.Password, opts.DB); err != nil {
-			return err
-		}
+		return h.provisionRedisCache()
 	}
 
 	// load the guest module distributed
@@ -227,6 +269,19 @@ func (h *Handler) Provision(ctx caddy.Context) error {
 	}
 
 	config = h.Config
+	return nil
+}
+
+func (h *Handler) provisionRedisCache() error {
+	opts, err := backends.ParseRedisConfig(h.Config.RedisConnectionSetting)
+	if err != nil {
+		return err
+	}
+
+	if err := backends.InitRedisClient(opts.Addr, opts.Password, opts.DB); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -283,7 +338,6 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyht
 	lock := h.URLLocks.Acquire(key)
 	defer lock.Unlock()
 
-	// Lookup correct entry
 	previousEntry, exists := h.Cache.Get(key, r)
 
 	// First case: CACHE HIT
