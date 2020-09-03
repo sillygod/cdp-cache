@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/caddyserver/caddy/v2"
 	"github.com/google/uuid"
@@ -15,11 +16,20 @@ import (
 )
 
 var (
-	l sync.Mutex
+	l        sync.Mutex
+	client   *api.Client
+	handlers []WatchHandler
 )
 
 func init() {
 	caddy.RegisterModule(ConsulService{})
+}
+
+// WatchHandler holds callback and its params. This will be registered on
+// the consul's watch event.
+type WatchHandler struct {
+	Pg       map[string]interface{}
+	Callback WatchCallback
 }
 
 type watchKind string
@@ -51,9 +61,78 @@ const (
 	connectRootsWatchKind watchKind = "connect_roots"
 	connectLeafWatchKind  watchKind = "connect_leaf"
 	agentServiceWatchKind watchKind = "agent_service"
+
+	// Keyprefix is the key prefix for listening key changes
+	Keyprefix = "del_cache_key"
 )
 
-type watchCallback func(data interface{}) error
+// WatchCallback is a processor for watch event
+type WatchCallback func(data interface{}) error
+
+// DistributedLock holds a session and a lock for mutually exclusive usage.
+type DistributedLock struct {
+	Session   *api.Session
+	SessionID string
+	lock      *api.Lock
+	client    *api.Client
+}
+
+// Lock acquires distributed lock
+func (d *DistributedLock) Lock() (<-chan struct{}, error) {
+	return d.lock.Lock(nil)
+}
+
+// Unlock release the distributed lock
+func (d *DistributedLock) Unlock() error {
+	return d.lock.Unlock()
+}
+
+// Destroy release the session
+func (d *DistributedLock) Destroy() {
+	d.Session.Destroy(d.SessionID, nil)
+}
+
+// NewDistributedLock new a distributed lock based on consul session
+func NewDistributedLock(key string) (*DistributedLock, error) {
+	session := client.Session()
+	key = Keyprefix + "/" + key
+
+	se := &api.SessionEntry{
+		Name:     "_deleted_keys_manager",
+		TTL:      api.DefaultLockSessionTTL,
+		Behavior: api.SessionBehaviorDelete,
+	}
+
+	id, _, err := session.Create(se, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	ip, _ := helper.IPAddr()
+
+	opts := &api.LockOptions{
+		Key:          key,
+		Value:        []byte(ip.String()),
+		Session:      id,
+		SessionName:  se.Name,
+		SessionTTL:   se.TTL,
+		LockWaitTime: 1 * time.Second,
+		LockTryOnce:  true,
+	}
+
+	lock, err := client.LockOpts(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	return &DistributedLock{
+		Session:   session,
+		SessionID: id,
+		lock:      lock,
+		client:    client,
+	}, nil
+
+}
 
 // ConsulService handles the client to interact with the consul agent
 type ConsulService struct {
@@ -98,6 +177,12 @@ func getIPFromServiceID(serviceID string) string {
 	return strings.Split(serviceID, ":")[1]
 }
 
+// RegisterWatchHandler append a pair of watch and handler to the list
+// which will be registered to the consul watch service.
+func RegisterWatchHandler(wh WatchHandler) {
+	handlers = append(handlers, wh)
+}
+
 // Provision init the consul's agent and establish connection
 func (c *ConsulService) Provision(ctx caddy.Context) error {
 	// init the consul api client here
@@ -117,6 +202,7 @@ func (c *ConsulService) Provision(ctx caddy.Context) error {
 		return err
 	}
 
+	client = consulClient
 	c.Client = consulClient
 	c.Catalog = c.Client.Catalog()
 
@@ -154,47 +240,31 @@ func (c *ConsulService) Provision(ctx caddy.Context) error {
 	}
 
 	// Register some watch functions ex. health check, key-value store etc.
-	err = c.RegisterWatches()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.RegisterWatches()
 }
 
 // RegisterWatches registers the specified watches
 func (c *ConsulService) RegisterWatches() error {
 	var err error
 
-	handlers := []struct {
-		pg       map[string]interface{}
-		callback watchCallback
-	}{
+	handlers = append(handlers, []WatchHandler{
 		{
-			pg:       c.getChecksParams(),
-			callback: c.handleChecks,
+			Pg:       GetChecksParams(c.Config.ServiceName),
+			Callback: c.handleChecks,
 		},
 		{
-			pg:       c.getKeysParams("caddy_config"),
-			callback: c.handleConfigChanged,
+			Pg:       GetKeysParams("caddy_config"),
+			Callback: c.handleConfigChanged,
 		},
-		{
-			pg:       c.getKeyPrefixParams("cache_key"),
-			callback: c.handleDeleteKey,
-		},
-	}
+	}...)
 
 	for _, h := range handlers {
-		err = c.RegisterWatch(h.pg, h.callback)
+		err = c.RegisterWatch(h.Pg, h.Callback)
 		if err != nil {
 			return err
 		}
 	}
 
-	return nil
-}
-
-func (c *ConsulService) handleDeleteKey(data interface{}) error {
 	return nil
 }
 
@@ -204,7 +274,7 @@ func (c *ConsulService) handleConfigChanged(data interface{}) error {
 		return fmt.Errorf("non expected data type: %s", reflect.TypeOf(data))
 	}
 
-	// presume the valus is json format
+	// presume the values is json format
 	return caddy.Load(kv.Value, false)
 }
 
@@ -219,8 +289,8 @@ func (c *ConsulService) handleChecks(data interface{}) error {
 	for _, check := range checks {
 
 		if check.Status == "passing" {
-			peer_ip := getIPFromServiceID(check.ServiceID)
-			address := fmt.Sprintf("http://%s", peer_ip)
+			peerIP := getIPFromServiceID(check.ServiceID)
+			address := fmt.Sprintf("http://%s", peerIP)
 			peers = append(peers, address)
 		}
 	}
@@ -232,31 +302,36 @@ func (c *ConsulService) handleChecks(data interface{}) error {
 	return nil
 }
 
-func (c *ConsulService) getKeyPrefixParams(keyPrefix string) map[string]interface{} {
-	params := c.getParams(keyPrefixWatchKind)
+// GetKeyPrefixParams gets the params for watching prefix event
+func GetKeyPrefixParams(keyPrefix string) map[string]interface{} {
+	params := GetParams(keyPrefixWatchKind)
 	params["prefix"] = keyPrefix
 	return params
 }
 
-func (c *ConsulService) getKeysParams(key string) map[string]interface{} {
-	params := c.getParams(keyWatchKind)
+// GetKeysParams gets the params for watching key event
+func GetKeysParams(key string) map[string]interface{} {
+	params := GetParams(keyWatchKind)
 	params["key"] = key
 	return params
 }
 
-func (c *ConsulService) getChecksParams() map[string]interface{} {
-	params := c.getParams(checksWatchKind)
-	params["service"] = c.Config.ServiceName
+// GetChecksParams gets the params for watching checks event
+func GetChecksParams(serviceName string) map[string]interface{} {
+	params := GetParams(checksWatchKind)
+	params["service"] = serviceName
 	return params
 }
 
-func (c *ConsulService) getParams(kind watchKind) map[string]interface{} {
+// GetParams returns the common params for all watch events
+func GetParams(kind watchKind) map[string]interface{} {
 	params := map[string]interface{}{}
 	params["type"] = string(kind) // consul will ensure the type to be string
 	return params
 }
 
-func (c *ConsulService) RegisterWatch(params map[string]interface{}, fn watchCallback) error {
+// RegisterWatch watches the events and attaches the handlers to them
+func (c *ConsulService) RegisterWatch(params map[string]interface{}, fn WatchCallback) error {
 	plan, err := watch.Parse(params)
 	if err != nil {
 		return err

@@ -169,6 +169,8 @@ func (i *InMemoryBackend) Flush() error {
 func (i *InMemoryBackend) Clean() error {
 	// NOTE: there is no way to del or update the cache in the official groupcache
 	// Therefore, I decide to use github.com/mailgun/groupcache/v2
+
+	// TODO: to figure out why get context cancel here
 	return groupch.Remove(i.Ctx, i.Key)
 }
 
