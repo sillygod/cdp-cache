@@ -22,7 +22,7 @@ func (suite *CaddyfileTestSuite) TestSettingFileCacheType() {
 			path /tmp/cache
 			default_max_age 5m
 			status_header "X-Cache-Status"
-			cache_key "{http.request.method} {http.request.host}{http.request.uri.path} {http.request.uri.query}"
+			cache_key "{http.request.method} {http.request.host}{http.request.uri}"
 			cache_bucket_num 1024
 			match_header Content-Type image/png
 			match_header X-Forwarded-For 144.30.20.10
@@ -55,7 +55,7 @@ func (suite *CaddyfileTestSuite) TestInvalidCacheStatusHeader() {
 	h := httpcaddyfile.Helper{
 		Dispenser: caddyfile.NewTestDispenser(`
 		http_cache {
-			status_header X-Cache-Status A-Status	
+			status_header X-Cache-Status A-Status
 		}`),
 	}
 	_, err := parseCaddyfile(h)
