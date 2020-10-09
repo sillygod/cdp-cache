@@ -230,10 +230,7 @@ func (c cachePurge) handlePurge(w http.ResponseWriter, r *http.Request) error {
 	purgeRepl.Set("http.request.uri.path", payload.path)
 
 	cache := getHandlerCache()
-	// example key should be like "GET localhost/static/js/chunk-element.js?"
-	i := strings.Index(config.CacheKeyTemplate, "?")
-	escapedKeyTmpl := config.CacheKeyTemplate[:i] + "\\" + config.CacheKeyTemplate[i:]
 
-	conds := purgeRepl.ReplaceKnown(escapedKeyTmpl, "")
+	conds := purgeRepl.ReplaceKnown(config.CacheKeyTemplate, "")
 	return c.Purge(cache, conds)
 }
