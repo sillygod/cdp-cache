@@ -90,7 +90,7 @@ func (suite *CacheEndpointTestSuite) TestListCacheKeys() {
 	result, err := ioutil.ReadAll(res.Body)
 	res.Body.Close()
 	suite.Assert().NoError(err)
-	suite.True(strings.Contains(string(result), "GET localhost/hello?"))
+	suite.True(strings.Contains(string(result), "GET localhost/hello"))
 
 }
 
@@ -108,7 +108,7 @@ func (suite *CacheEndpointTestSuite) TestShowCache() {
 	_, err = suite.caddyTester.Client.Do(r)
 	suite.Assert().NoError(err)
 	// create the cache first
-	url := fmt.Sprintf("http://localhost:7777/caches/%s", url.PathEscape("GET localhost/hello?"))
+	url := fmt.Sprintf("http://localhost:7777/caches/%s", url.PathEscape("GET localhost/hello"))
 
 	r, err = http.NewRequest("GET", url, nil)
 	suite.Assert().NoError(err)
@@ -134,7 +134,7 @@ func (suite *CacheEndpointTestSuite) TestPurgeCache() {
 			host:     "http://localhost:9898/",
 			uri:      "hello",
 			body:     []byte(`{"method": "GET", "host": "http://localhost", "uri": "hello"}`),
-			cacheKey: "GET localhost/hello?",
+			cacheKey: "GET localhost/hello",
 		},
 		{
 			host:     "http://localhost:9898/",
@@ -146,7 +146,7 @@ func (suite *CacheEndpointTestSuite) TestPurgeCache() {
 			host:     "http://localhost:9898/",
 			uri:      "hello",
 			body:     []byte(`{"host": "http://localhost/", "uri": "hello"}`), // host with trailing forward slash is also ok
-			cacheKey: "GET localhost/hello?",
+			cacheKey: "GET localhost/hello",
 		},
 	}
 
