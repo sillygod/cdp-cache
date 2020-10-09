@@ -70,9 +70,12 @@ func (h *Handler) respond(w http.ResponseWriter, entry *Entry, cacheStatus strin
 	h.addStatusHeaderIfConfigured(w, cacheStatus)
 	copyHeaders(entry.Response.snapHeader, w.Header())
 
+	// set the response code earlier to proxy the upstream response codes
+	// This avoids the cache to respond with 200 when the upstream sent a 302 (Redirect)
+	w.WriteHeader(entry.Response.Code)
+
 	// when the request method is head, we don't need ot perform write body
 	if entry.Request.Method == "HEAD" {
-		w.WriteHeader(entry.Response.Code)
 		return nil
 	}
 
