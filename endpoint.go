@@ -38,7 +38,7 @@ type cachePurge struct{}
 // ex. when the client send a delete request with the body
 // {
 //    "method": "GET",
-//    "hots": "example.com",
+//    "host": "example.com",
 //    "uri": "/static?ext=txt",
 // }
 //
@@ -46,22 +46,12 @@ type PurgePayload struct {
 	Method string `json:"method"`
 	Host   string `json:"host"`
 	URI    string `json:"uri"`
-	path   string
-	query  string
 }
 
 func (p *PurgePayload) parseMethod() {
 	if p.Method == "" {
 		p.Method = "GET" // set GET as default
 	}
-}
-
-func (p *PurgePayload) parseURI() {
-	tokens := strings.Split(p.URI, "?")
-	if len(tokens) > 1 {
-		p.query = tokens[1]
-	}
-	p.path = tokens[0]
 }
 
 func (p *PurgePayload) pruneHost() {
@@ -77,7 +67,6 @@ func (p *PurgePayload) pruneHost() {
 
 func (p *PurgePayload) transform() {
 	p.parseMethod()
-	p.parseURI()
 	p.pruneHost()
 }
 
@@ -226,11 +215,10 @@ func (c cachePurge) handlePurge(w http.ResponseWriter, r *http.Request) error {
 
 	purgeRepl.Set("http.request.method", payload.Method)
 	purgeRepl.Set("http.request.host", payload.Host)
-	purgeRepl.Set("http.request.uri.query", payload.query)
-	purgeRepl.Set("http.request.uri.path", payload.path)
+	purgeRepl.Set("http.request.uri", payload.URI)
 
 	cache := getHandlerCache()
 
 	conds := purgeRepl.ReplaceKnown(config.CacheKeyTemplate, "")
-	return c.Purge(cache, conds)
+	return c.Purge(cache, regexp.QuoteMeta(conds))
 }
