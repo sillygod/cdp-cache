@@ -374,7 +374,7 @@ func (e *Entry) setBackend(ctx context.Context, config *Config) error {
 
 	switch config.Type {
 	case file:
-		backend, err = backends.NewFileBackend(config.Path)
+		backend, err = backends.NewFileBackend(config.Path, e.keyWithRespectVary())
 	case inMemory:
 		backend, err = backends.NewInMemoryBackend(ctx, e.keyWithRespectVary(), e.expiration)
 	case redis:

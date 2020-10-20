@@ -1,8 +1,9 @@
 package backends
 
 import (
+	"crypto/sha256"
+	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"sync"
 )
@@ -14,13 +15,14 @@ type FileBackend struct {
 }
 
 // NewFileBackend new a disk storage backend
-func NewFileBackend(path string) (Backend, error) {
+func NewFileBackend(path string, key string) (Backend, error) {
 	err := os.MkdirAll(path, os.ModePerm)
 	if err != nil {
 		return nil, err
 	}
 
-	file, err := ioutil.TempFile(path, "caddy-cache-")
+	fHash := sha256.Sum256([]byte(key))
+	file, err := os.Create(fmt.Sprintf("%s/%x", path, fHash))
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +35,12 @@ func NewFileBackend(path string) (Backend, error) {
 
 // Length return the cache content's length
 func (f *FileBackend) Length() int {
-	return 0
+	fi, err := os.Stat(f.file.Name())
+	if err != nil {
+		return 0
+	}
+
+	return int(fi.Size())
 }
 
 // Write writes the content to file
