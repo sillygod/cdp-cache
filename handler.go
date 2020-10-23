@@ -410,19 +410,31 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyht
 			return caddyhttp.Error(http.StatusInternalServerError, err)
 		}
 
-		h.Cache.Put(r, entry)
 		err = h.respond(w, entry, cacheMiss)
 		if err != nil {
-			h.logger.Error("cache handler", zap.Error(err))
+			// "http2: stream closed" happens when the downstream client cancels the request, which is not our failure
+			// and we don't want to log those
+			if !strings.Contains(err.Error(), "stream closed") {
+				h.logger.Error("cache handler", zap.Error(err))
+			}
 			return caddyhttp.Error(entry.Response.Code, err)
 		}
+
+		// Only put in the cache if the full response is sent to the client
+		// Otherwise, if the client closes the connection in the middle of the upstream fetch
+		// the entire handler context will be canceled and the cache will have an invalid entry
+		h.Cache.Put(r, entry)
 
 		return nil
 	}
 
 	err = h.respond(w, entry, cacheSkip)
 	if err != nil {
-		h.logger.Error("cache handler", zap.Error(err))
+		// "http2: stream closed" happens when the downstream client cancels the request, which is not our failure
+		// and we don't want to log those
+		if !strings.Contains(err.Error(), "stream closed") {
+			h.logger.Error("cache handler", zap.Error(err))
+		}
 		return caddyhttp.Error(entry.Response.Code, err)
 	}
 
