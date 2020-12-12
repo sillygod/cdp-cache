@@ -79,7 +79,7 @@ func (r *Response) writeHeader(b []byte, str string) {
 		h.Set("Content-Type", http.DetectContentType(b))
 	}
 
-	r.WriteHeader(200)
+	r.WriteHeader(r.Code)
 }
 
 // Write writes the upstream's content in the backend's storage

@@ -328,11 +328,9 @@ func (e *Entry) writePublicResponse(w http.ResponseWriter) error {
 
 func (e *Entry) writePrivateResponse(w http.ResponseWriter) error {
 	// wrap the original response writer
+	w.WriteHeader(e.Response.Code)
 	e.Response.SetBody(backends.WrapResponseWriterToBackend(w))
 	e.Response.WaitClose()
-	if !e.Response.IsFirstByteWritten {
-		w.WriteHeader(e.Response.Code)
-	}
 	return nil
 }
 
