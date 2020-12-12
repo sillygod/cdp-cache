@@ -187,6 +187,7 @@ func (suite *EntryTestSuite) TestEntryWritePrivateResponse() {
 	entry := NewEntry("unique_key2", req, res, suite.config)
 
 	go func() {
+		entry.Response.Write([]byte(`Bad Gateway`))
 		entry.Response.Close()
 	}()
 
