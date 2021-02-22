@@ -317,7 +317,9 @@ func (e *Entry) writePublicResponse(w http.ResponseWriter) error {
 
 	if length == "" {
 		contentLength := strconv.Itoa(e.Response.body.Length())
-		w.Header().Set("Content-Length", contentLength)
+		if contentLength != "0" {
+			w.Header().Set("Content-Length", contentLength)
+		}
 	}
 
 	// wow, we should write the header before calling this function
