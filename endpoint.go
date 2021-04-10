@@ -138,7 +138,7 @@ func (c cachePurge) handleShowCache(w http.ResponseWriter, r *http.Request) erro
 
 	if r.Method != http.MethodGet {
 		return caddy.APIError{
-			Code: http.StatusMethodNotAllowed,
+			// Code: http.StatusMethodNotAllowed,
 			Err:  fmt.Errorf("method not allowed"),
 		}
 	}
@@ -172,7 +172,7 @@ func (c cachePurge) handleListCacheKeys(w http.ResponseWriter, r *http.Request) 
 
 	if r.Method != http.MethodGet {
 		return caddy.APIError{
-			Code: http.StatusMethodNotAllowed,
+			// Code: http.StatusMethodNotAllowed,
 			Err:  fmt.Errorf("method not allowed"),
 		}
 	}
@@ -184,7 +184,7 @@ func (c cachePurge) handleListCacheKeys(w http.ResponseWriter, r *http.Request) 
 	err := json.NewEncoder(w).Encode(keys)
 	if err != nil {
 		return caddy.APIError{
-			Code: http.StatusBadRequest,
+			// Code: http.StatusBadRequest,
 			Err:  err,
 		}
 	}
@@ -196,7 +196,7 @@ func (c cachePurge) handleListCacheKeys(w http.ResponseWriter, r *http.Request) 
 func (c cachePurge) handlePurge(w http.ResponseWriter, r *http.Request) error {
 	if r.Method != http.MethodDelete {
 		return caddy.APIError{
-			Code: http.StatusMethodNotAllowed,
+			// Code: http.StatusMethodNotAllowed,
 			Err:  fmt.Errorf("method not allowed"),
 		}
 	}
@@ -208,7 +208,7 @@ func (c cachePurge) handlePurge(w http.ResponseWriter, r *http.Request) error {
 	_, err := io.Copy(buf, r.Body)
 	if err != nil {
 		return caddy.APIError{
-			Code: http.StatusBadRequest,
+			// Code: http.StatusBadRequest,
 			Err:  fmt.Errorf("reading request body: %s", err.Error()),
 		}
 	}
