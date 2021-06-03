@@ -21,7 +21,7 @@
 
     log {
         output file /tmp/logs/caddy/access.log
-        format logfmt 
+        format console
         level debug
     }
 
@@ -36,5 +36,3 @@
         level info
     }
 }
-
-

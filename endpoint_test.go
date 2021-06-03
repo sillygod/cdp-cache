@@ -17,6 +17,7 @@ type CacheEndpointTestSuite struct {
 	suite.Suite
 	caddyTester *caddytest.Tester
 	url         string
+	admin_url   string
 }
 
 func (suite *CacheEndpointTestSuite) assertKeyNotIn(key string, keys []string, msgAndArgs ...interface{}) {
@@ -46,10 +47,10 @@ func (suite *CacheEndpointTestSuite) assertKeyIn(key string, keys []string, msgA
 func (suite *CacheEndpointTestSuite) SetupSuite() {
 	suite.caddyTester = caddytest.NewTester(suite.T())
 	suite.url = "http://localhost:9898/hello"
+	suite.admin_url = "http://localhost:2019"
 	suite.caddyTester.InitServer(`
 	{
 		order http_cache before reverse_proxy
-		admin 0.0.0.0:7777
 	}
 
 	:9898 {
@@ -68,9 +69,7 @@ func (suite *CacheEndpointTestSuite) SetupSuite() {
 		respond /hello 200 {
 			body "hope anything will be good"
 		}
-	}
-
-	`, "caddyfile")
+	}`, "caddyfile")
 }
 
 func (suite *CacheEndpointTestSuite) TestListCacheKeys() {
@@ -81,7 +80,7 @@ func (suite *CacheEndpointTestSuite) TestListCacheKeys() {
 	suite.Assert().NoError(err)
 	// create the cache first
 
-	r, err = http.NewRequest("GET", "http://localhost:7777/caches", nil)
+	r, err = http.NewRequest("GET", suite.admin_url+"/caches", nil)
 	suite.Assert().NoError(err)
 
 	res, err = suite.caddyTester.Client.Do(r)
@@ -95,7 +94,7 @@ func (suite *CacheEndpointTestSuite) TestListCacheKeys() {
 }
 
 func (suite *CacheEndpointTestSuite) TestHealthCheck() {
-	r, err := http.NewRequest("GET", "http://localhost:7777/health", nil)
+	r, err := http.NewRequest("GET", suite.admin_url+"/health", nil)
 	suite.Assert().NoError(err)
 	_, err = suite.caddyTester.Client.Do(r)
 	suite.Assert().NoError(err)
@@ -108,7 +107,7 @@ func (suite *CacheEndpointTestSuite) TestShowCache() {
 	_, err = suite.caddyTester.Client.Do(r)
 	suite.Assert().NoError(err)
 	// create the cache first
-	url := fmt.Sprintf("http://localhost:7777/caches/%s", url.PathEscape("GET localhost/hello?"))
+	url := fmt.Sprintf("%s/caches/%s", suite.admin_url, url.PathEscape("GET localhost/hello?"))
 
 	r, err = http.NewRequest("GET", url, nil)
 	suite.Assert().NoError(err)
@@ -159,7 +158,7 @@ func (suite *CacheEndpointTestSuite) TestPurgeCache() {
 		suite.Assert().NoError(err)
 		// create the cache first
 
-		r, err = http.NewRequest("DELETE", "http://localhost:7777/caches/purge", bytes.NewBuffer(data.body))
+		r, err = http.NewRequest("DELETE", suite.admin_url+"/caches/purge", bytes.NewBuffer(data.body))
 		suite.Assert().NoError(err)
 		r.Header.Set("Content-Type", "application/json")
 
