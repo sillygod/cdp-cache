@@ -19,11 +19,11 @@ jobs:
       - name: set up go 1.x
         uses: actions/setup-go@v2
         with:
-          go-version: '1.14.4'
+          go-version: '1.16.4'
         id: go
 
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - name: checkt out 
+      - name: checkt out
         uses: actions/checkout@v2
 
       # Runs test
@@ -62,6 +62,3 @@ jobs:
           username: sillygod
           password: ${{ secrets.GITHUB_TOKEN }}
           tags: latest
-
-
-

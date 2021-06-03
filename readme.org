@@ -18,36 +18,36 @@
   Currently, this doesn't support =distributed cache= yet. It's still in plan.
 
 * Features
- 
+
 ** Multi storage backends support
    Now the following backends are supported.
-   
+
    - file
    - inmemory
    - redis
-   
+
    In the latter part, I will show the example Caddyfile to serve different type of proxy cache server.
-   
+
 ** Conditional rule to cache the upstream response
    - uri path matcher
    - http header matcher
 
 ** Set default cache's max age
    A default age for matched responses that do not have an explicit expiration.
-** Purge cache 
+** Purge cache
    There are exposed endpoints to purge cache. I implement it with admin apis endpoints. The following will show you how to purge cache
-   
+
 *** first you can list the current caches
-    
+
     Given that you specify the port 7777 to serve caddy admin, you can get the list of cache by the api below.
-    
+
     #+begin_src restclient
       GET http://example.com:7777/caches
     #+end_src
 
 *** purge the cache with http DELETE request
     It supports the regular expression.
-    
+
     #+begin_src restclient
       DELETE http://example.com:7777/caches/purge
       Content-Type: application/json
@@ -59,15 +59,15 @@
       }
     #+end_src
 ** Support cluster with consul
-   
-   NOTE: still under development and only the =memory= backend supports. 
-   
+
+   NOTE: still under development and only the =memory= backend supports.
+
    I've provided a simple example to mimic a cluster environment.
-   
+
    #+begin_src sh
      PROJECT_PATH=/app docker-compose --project-directory=./ -f example/distributed_cache/docker-compose.yaml up
    #+end_src
-   
+
 * How to build
 
   In development, go to the cmd folder and type the following commands.
@@ -75,23 +75,23 @@
   #+begin_src sh
     go build -ldflags="-w -s" -o caddy
   #+end_src
-  
+
   To build linux binary by this
-  #+begin_src 
+  #+begin_src
   GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o caddy
   #+end_src
-  
+
   Or you can use the [[https://github.com/caddyserver/xcaddy][xcaddy]] to build the executable file.
   Ensure you've install it by =go get -u github.com/caddyserver/xcaddy/cmd/xcaddy=
   #+begin_src sh
-    xcaddy build v2.0.0 --with github.com/sillygod/cdp-cache 
+    xcaddy build v2.0.0 --with github.com/sillygod/cdp-cache
   #+end_src
-  
+
   Xcaddy also provide a way to develop plugin locally.
   #+begin_src sh
     xcaddy run --config cmd/Caddyfile
   #+end_src
-  
+
   To remove unused dependencies
   #+begin_src sh
     go mod tidy
@@ -103,14 +103,14 @@
   #+begin_src sh
     caddy run --config [caddy file] --adapter caddyfile
   #+end_src
-  
-  Or if you are preferred to use the docker 
+
+  Or if you are preferred to use the docker
   #+begin_src sh
     docker run -it -p80:80 -p443:443 -v [the path of caddyfile]:/app/Caddyfile docker.pkg.github.com/sillygod/cdp-cache/caddy:latest
   #+end_src
 
 * Configuration
-  
+
   The following will list current support configs in the caddyfile.
 
 *** status_header
@@ -123,9 +123,9 @@
     The cache's expiration time.
 
 *** match_header
-    only the req's header match the condtions 
+    only the req's header match the condtions
     ex.
-    
+
     #+begin_quote
     match_header Content-Type image/jpg image/png "text/plain; charset=utf-8"
     #+end_quote
@@ -141,46 +141,48 @@
 
 *** cache_type
     Indicate to use which kind of cache's storage backend. Currently, there are two choices. One is =file= and the other is =in_memory=
-   
+
 *** cache_max_memory_size
 
     The max memory usage for in_memory backend.
-    
+
 *** distributed
-    
+
     Working in process. Currently, only support =consul= to establish the cluster of cache server node.
 
-    To see a example config, please refer [[file:example/distributed_cache/Caddyfile::health_check ":7777/health"][this]] 
-    
+    To see a example config, please refer [[file:example/distributed_cache/Caddyfile::health_check ":7777/health"][this]]
+
 **** service_name
      specify your service to be registered in the consul agent.
-   
+
 **** addr
      the address of the consul agent.
 
 **** health_check
      indicate the health_check endpoint which consul agent will use this endpoint to check the cache server is healthy
-     
-     
+
+
 ** Example configs
    You can go to the directory [[file:example/][example]]. It shows you each type of cache's configuration.
 
 * Benchmarks
-  
+
   Now, I just simply compares the performance between in-memory and disk.
-  
+
 ** Env
    Caddy run with the config file under directory =benchmark= and tests were run on the mac book pro (1.4 GHz Intel Core i5, 16 GB 2133 MHz LPDDR3)
 
 ** Test Result
 
    The following benchmark is analysized by =wrk -c 50 -d 30s --latency -t 4 http://localhost:9991/pg31674.txt= without log open. Before running this, ensure you provision the tests data by =bash benchmark/provision.sh=
-  
+
    |                         | req/s | latency (50% 90% 99%)     |
    | proxy + file cache      | 13853 | 3.29ms /  4.09ms / 5.26ms |
    | proxy + in memory cache | 20622 | 2.20ms /  3.03ms / 4.68ms |
 
 * Todo list
-  
+
   - [ ] distributed cache (in progress)
   - [ ] more optimization..
+  - [ ] implement a consul-based storage for sharing certificates (https://github.com/pteich/caddy-tlsconsul)
+        https://github.com/caddyserver/certmagic/wiki/Storage-Implementations
