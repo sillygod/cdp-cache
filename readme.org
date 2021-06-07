@@ -84,7 +84,7 @@
   Or you can use the [[https://github.com/caddyserver/xcaddy][xcaddy]] to build the executable file.
   Ensure you've install it by =go get -u github.com/caddyserver/xcaddy/cmd/xcaddy=
   #+begin_src sh
-    xcaddy build v2.0.0 --with github.com/sillygod/cdp-cache
+    xcaddy build v2.4.1 --with github.com/sillygod/cdp-cache
   #+end_src
 
   Xcaddy also provide a way to develop plugin locally.
@@ -174,7 +174,9 @@
 
 ** Test Result
 
-   The following benchmark is analysized by =wrk -c 50 -d 30s --latency -t 4 http://localhost:9991/pg31674.txt= without log open. Before running this, ensure you provision the tests data by =bash benchmark/provision.sh=
+   The following benchmark is analysized by =wrk -c 50 -d 30s --latency -t 4 http://localhost:9991/pg31674.txt= without log open.
+   Before running this, ensure you provision the tests data by =bash benchmark/provision.sh=
+
 
    |                         | req/s | latency (50% 90% 99%)     |
    | proxy + file cache      | 13853 | 3.29ms /  4.09ms / 5.26ms |
@@ -184,5 +186,3 @@
 
   - [ ] distributed cache (in progress)
   - [ ] more optimization..
-  - [ ] implement a consul-based storage for sharing certificates (https://github.com/pteich/caddy-tlsconsul)
-        https://github.com/caddyserver/certmagic/wiki/Storage-Implementations
