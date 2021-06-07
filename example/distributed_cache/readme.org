@@ -1,17 +1,16 @@
 * Distributed Cache Example
-  
+
   Note! It's still under development. A lot of issues are remained to be solved.
 
-  
 * Experiment
 
  Before we start, spinning up your environment with ~PROJECT_PATH=/app docker-compose --project-directory=./ -f example/distributed_cache/docker-compose.yaml up~. Then, provision the test data with the helper scrips in the below section. ~docker exec -w /app/benchmark file bash provision.sh~ this will provision test data to the container file whose port is exported 9995.
- 
+
  Start to test the cache is sync or not.
  First, ~curl http://localhost:9991/pg31674.txt~. It should go the source(file) to ask the content and then cache it.
  Second, ~curl http://localhost:9992/pg31674.txt~. This will try to get the cache from the peer if things are on track.
 
- 
+
  #+begin_src sh
    uri=("http://localhost:9991/pg31674.txt" "http://localhost:9992/pg31674.txt" "http://localhost:9993/pg31674.txt" "http://localhost:9994/pg31674.txt")
 
@@ -21,13 +20,13 @@
  #+end_src
 
 * Helper scripts
-  
+
   To provision the test data with the one of the following two commands.
-  
+
   #+begin_src sh
     PROJECT_PATH=/app docker-compose --project-directory=./ -f example/distributed_cache/docker-compose.yaml exec -w /app/provision cdp "bash provision.sh"
   #+end_src
-  
+
   #+begin_src sh
     docker exec -w /app/benchmark file bash provision.sh
   #+end_src
@@ -35,4 +34,4 @@
   If you want to run an interactive shell for development, the following command will do it for you.
   #+begin_src sh
     PROJECT_PATH=/app docker-compose --project-directory=./ -f example/distributed_cache/docker-compose.yaml run -p9992:9991 --entrypoint="/bin/bash" cdp2
-  #+end_src  
+  #+end_src

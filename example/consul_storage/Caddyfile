@@ -1,31 +1,26 @@
-# This is an example caddyfile
 {
-    # debug
     order http_cache before reverse_proxy
     admin 0.0.0.0:7777
+    debug
+
+    storage consul {
+        addr "consul:9500"
+        token ""
+        key_prefix "caddy_https"
+    }
 
 }
 
-:9991  {
-
+:9991 {
     reverse_proxy {
         to localhost:9995
     }
 
     http_cache {
-
         cache_type in_memory
         match_path /
-        match_header Content-Type image/jpg image/png "text/plain; charset=utf-8" "application/json" ""
 
-    }
-
-
-
-    log {
-        output file /tmp/logs/caddy/access.log
-        format console
-        level debug
+        default_max_age 1m
     }
 
 }
