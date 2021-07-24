@@ -122,6 +122,8 @@
 *** match_methods
     By default, only =GET= and =POST= methods are cached. If you would like to cache other methods as well you can configure here which methods should be cached, e.g.: =GET HEAD POST=.
 
+    To be able to distinguish different POST requests, it is advisable to include the body hash in the cache key, e.g.: ={http.request.method} {http.request.host}{http.request.uri.path}?{http.request.uri.query} {http.request.contentlength} {http.request.bodyhash}=
+
 *** default_max_age
     The cache's expiration time.
 

@@ -1,6 +1,8 @@
 package httpcache
 
 import (
+	"bytes"
+	"context"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -8,6 +10,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/caddyserver/caddy/v2"
+	"github.com/caddyserver/caddy/v2/modules/caddyhttp"
 	"github.com/sillygod/cdp-cache/backends"
 	"github.com/stretchr/testify/suite"
 )
@@ -271,9 +275,32 @@ func (suite *HTTPCacheTestSuite) TearDownSuite() {
 	suite.Nil(err)
 }
 
+type KeyTestSuite struct {
+	suite.Suite
+}
+
+func (suite *KeyTestSuite) TestContentLengthInKey() {
+	body := []byte(`{"search":"my search string"}`)
+	req := httptest.NewRequest("POST", "/", bytes.NewBuffer(body))
+	ctx := context.WithValue(req.Context(), caddy.ReplacerCtxKey, caddyhttp.NewTestReplacer(req))
+	req = req.WithContext(ctx)
+	key := getKey("{http.request.contentlength}", req)
+	suite.Equal("29", key)
+}
+
+func (suite *KeyTestSuite) TestBodyHashInKey() {
+	body := []byte(`{"search":"my search string"}`)
+	req := httptest.NewRequest("POST", "/", bytes.NewBuffer(body))
+	ctx := context.WithValue(req.Context(), caddy.ReplacerCtxKey, caddyhttp.NewTestReplacer(req))
+	req = req.WithContext(ctx)
+	key := getKey("{http.request.bodyhash}", req)
+	suite.Equal("5edeb27ddae03685d04df2ab56ebf11fb9c8a711", key)
+}
+
 func TestCacheStatusTestSuite(t *testing.T) {
 	suite.Run(t, new(CacheStatusTestSuite))
 	suite.Run(t, new(HTTPCacheTestSuite))
 	suite.Run(t, new(RuleMatcherTestSuite))
 	suite.Run(t, new(EntryTestSuite))
+	suite.Run(t, new(KeyTestSuite))
 }
