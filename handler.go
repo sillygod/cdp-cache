@@ -329,7 +329,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyht
 
 	}(h, start)
 
-	if !shouldUseCache(r) {
+	if !shouldUseCache(r, h.Config) {
 		h.addStatusHeaderIfConfigured(w, cacheBypass)
 		return next.ServeHTTP(w, r)
 	}

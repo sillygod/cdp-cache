@@ -119,6 +119,9 @@
 *** match_path
     Only the request's path match the condition will be cached. Ex. =/= means all request need to be cached because all request's path must start with =/=
 
+*** match_methods
+    By default, only =GET= and =POST= methods are cached. If you would like to cache other methods as well you can configure here which methods should be cached, e.g.: =GET HEAD POST=.
+
 *** default_max_age
     The cache's expiration time.
 
