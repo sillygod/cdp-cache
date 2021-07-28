@@ -146,7 +146,7 @@ func (c cachePurge) handleShowCache(w http.ResponseWriter, r *http.Request) erro
 	key := helper.TrimBy(r.URL.Path, "/", 2)
 	cache := getHandlerCache()
 
-	entry, exists := cache.Get(key, r)
+	entry, exists := cache.Get(key, r, false)
 	if exists {
 		err = entry.WriteBodyTo(w)
 	}

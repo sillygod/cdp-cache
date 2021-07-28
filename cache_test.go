@@ -216,7 +216,7 @@ func (suite *HTTPCacheTestSuite) SetupSuite() {
 
 func (suite *HTTPCacheTestSuite) TestGetNonExistEntry() {
 	req := makeRequest("/", http.Header{})
-	entry, exists := suite.cache.Get("abc", req)
+	entry, exists := suite.cache.Get("abc", req, false)
 	suite.Nil(entry)
 	suite.False(exists)
 }
@@ -238,9 +238,9 @@ func (suite *HTTPCacheTestSuite) TestGetExistEntry() {
 	req := makeRequest("/", http.Header{})
 	res := makeResponse(200, http.Header{})
 	entry := NewEntry("hello", req, res, suite.config)
-	suite.cache.Put(req, entry)
+	suite.cache.Put(req, entry, suite.config)
 
-	prevEntry, exists := suite.cache.Get("hello", req)
+	prevEntry, exists := suite.cache.Get("hello", req, false)
 	suite.Equal(prevEntry, entry)
 	suite.True(exists)
 }
@@ -251,7 +251,7 @@ func (suite *HTTPCacheTestSuite) TestCleanEntry() {
 	key := "friday"
 
 	entry := NewEntry(key, req, res, suite.config)
-	suite.cache.Put(req, entry)
+	suite.cache.Put(req, entry, suite.config)
 
 	keyInKeys := false
 	keys := suite.cache.Keys()
