@@ -338,7 +338,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyht
 	lock := h.URLLocks.Acquire(key)
 	defer lock.Unlock()
 
-	previousEntry, exists := h.Cache.Get(key, r)
+	previousEntry, exists := h.Cache.Get(key, r, false)
 
 	// First case: CACHE HIT
 	// The response exists in cache and is public
@@ -365,7 +365,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyht
 			return caddyhttp.Error(http.StatusInternalServerError, err)
 		}
 
-		h.Cache.Put(r, entry)
+		h.Cache.Put(r, entry, h.Config)
 		response.Close()
 
 		// NOTE: should set the content-length to the header manually when distributed
@@ -396,6 +396,21 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyht
 	entry, err := h.fetchUpstream(r, next)
 	upstreamDuration = time.Since(t)
 
+	if entry.Response.Code >= 500 {
+		// using stale entry when available
+		previousEntry, exists := h.Cache.Get(key, r, true)
+
+		if exists && previousEntry.isPublic {
+			if err := h.respond(w, previousEntry, cacheHit); err == nil {
+				return nil
+			} else if _, ok := err.(backends.NoPreCollectError); ok {
+				// if the err is No pre collect, just return nil
+				w.WriteHeader(previousEntry.Response.Code)
+				return nil
+			}
+		}
+	}
+
 	if err != nil {
 		return caddyhttp.Error(entry.Response.Code, err)
 	}
@@ -407,7 +422,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyht
 			return caddyhttp.Error(http.StatusInternalServerError, err)
 		}
 
-		h.Cache.Put(r, entry)
+		h.Cache.Put(r, entry, h.Config)
 		err = h.respond(w, entry, cacheMiss)
 		if err != nil {
 			h.logger.Error("cache handler", zap.Error(err))

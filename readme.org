@@ -122,6 +122,11 @@
 *** default_max_age
     The cache's expiration time.
 
+*** stale_max_age
+    The duration that a cache entry is kept in the cache, even though it has already expired. The default duration is =0=.
+
+    If this duration is > 0 and the upstream server answers with an HTTP status code >= 500 (server error) this plugin checks whether there is still an expired (stale) entry from a previous, successful call in the cache. In that case, this stale entry is used to answer instead of the 5xx response.
+
 *** match_header
     only the req's header match the condtions
     ex.

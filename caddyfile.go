@@ -43,6 +43,7 @@ var (
 	defaultcacheBucketsNum        = 256
 	defaultCacheMaxMemorySize     = GB // default is 1 GB
 	defaultRedisConnectionSetting = "localhost:6379 0"
+	defaultStaleMaxAge            = time.Duration(0)
 	defaultCacheKeyTemplate       = "{http.request.method} {http.request.host}{http.request.uri.path}?{http.request.uri.query}"
 	// Note: prevent character space in the key
 	// the key is refereced from github.com/caddyserver/caddy/v2/modules/caddyhttp.addHTTPVarsToReplacer
@@ -66,6 +67,7 @@ const (
 	// the following are keys for extensions
 	keyDistributed = "distributed"
 	keyInfluxLog   = "influxlog"
+	keyStaleMaxAge = "stale_max_age"
 )
 
 func init() {
@@ -85,6 +87,7 @@ type Config struct {
 	Path                   string                   `json:"path,omitempty"`
 	CacheKeyTemplate       string                   `json:"cache_key_template,omitempty"`
 	RedisConnectionSetting string                   `json:"redis_connection_setting,omitempty"`
+	StaleMaxAge            time.Duration            `json:"stale_max_age,omitempty"`
 }
 
 func getDefaultConfig() *Config {
@@ -100,6 +103,7 @@ func getDefaultConfig() *Config {
 		Type:                   defaultCacheType,
 		CacheKeyTemplate:       defaultCacheKeyTemplate,
 		RedisConnectionSetting: defaultRedisConnectionSetting,
+		StaleMaxAge:            defaultStaleMaxAge,
 	}
 }
 
@@ -249,6 +253,17 @@ func (h *Handler) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 				}
 
 				h.DistributedRaw = caddyconfig.JSONModuleObject(unm, "distributed", "consul", nil)
+
+			case keyStaleMaxAge:
+				if len(args) != 1 {
+					return d.Err("Invalid usage of stale_max_age in cache config.")
+				}
+
+				duration, err := time.ParseDuration(args[0])
+				if err != nil {
+					return d.Err(fmt.Sprintf("%s:%s, %s", keyStaleMaxAge, "Invalid duration ", parameter))
+				}
+				config.StaleMaxAge = duration
 
 			default:
 				return d.Err("Unknown cache parameter: " + parameter)
