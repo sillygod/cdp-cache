@@ -144,10 +144,16 @@ func (r *Response) WriteHeader(code int) {
 	r.headersChan <- struct{}{}
 }
 
-func shouldUseCache(req *http.Request) bool {
+func shouldUseCache(req *http.Request, config *Config) bool {
 
-	if req.Method != "GET" && req.Method != "HEAD" {
-		// Only cache Get and head request
+	matchMethod := false
+	for _, method := range config.MatchMethods {
+		if method == req.Method {
+			matchMethod = true
+			break
+		}
+	}
+	if !matchMethod {
 		return false
 	}
 

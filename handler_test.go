@@ -96,6 +96,13 @@ func (suite *HandlerProvisionTestSuite) TestProvisionRedisBackend() {
 
 type DetermineShouldCacheTestSuite struct {
 	suite.Suite
+	Config *Config
+}
+
+func (suite *DetermineShouldCacheTestSuite) SetupSuite() {
+	if suite.Config == nil {
+		suite.Config = getDefaultConfig()
+	}
 }
 
 func (suite *DetermineShouldCacheTestSuite) TestWebsocketConnection() {
@@ -119,7 +126,7 @@ func (suite *DetermineShouldCacheTestSuite) TestWebsocketConnection() {
 
 	for _, test := range tests {
 		req := makeRequest("/", test.header)
-		shouldBeCached := shouldUseCache(req)
+		shouldBeCached := shouldUseCache(req, suite.Config)
 		suite.Equal(test.shouldBeCached, shouldBeCached)
 	}
 
@@ -127,12 +134,37 @@ func (suite *DetermineShouldCacheTestSuite) TestWebsocketConnection() {
 
 func (suite *DetermineShouldCacheTestSuite) TestNonGETOrHeadMethod() {
 	r := httptest.NewRequest("POST", "/", nil)
-	shouldBeCached := shouldUseCache(r)
+	shouldBeCached := shouldUseCache(r, suite.Config)
+	suite.False(shouldBeCached)
+}
+
+type DetermineShouldCachePOSTOnlyTestSuite struct {
+	suite.Suite
+	Config *Config
+}
+
+func (suite *DetermineShouldCachePOSTOnlyTestSuite) SetupSuite() {
+	if suite.Config == nil {
+		suite.Config = getDefaultConfig()
+		suite.Config.MatchMethods = []string{"POST"}
+	}
+}
+
+func (suite *DetermineShouldCachePOSTOnlyTestSuite) TestPOSTMethod() {
+	r := httptest.NewRequest("POST", "/", nil)
+	shouldBeCached := shouldUseCache(r, suite.Config)
+	suite.True(shouldBeCached)
+}
+
+func (suite *DetermineShouldCachePOSTOnlyTestSuite) TestGETMethod() {
+	r := httptest.NewRequest("GET", "/", nil)
+	shouldBeCached := shouldUseCache(r, suite.Config)
 	suite.False(shouldBeCached)
 }
 
 func TestCacheKeyTemplatingTestSuite(t *testing.T) {
 	suite.Run(t, new(CacheKeyTemplatingTestSuite))
 	suite.Run(t, new(DetermineShouldCacheTestSuite))
+	suite.Run(t, new(DetermineShouldCachePOSTOnlyTestSuite))
 	suite.Run(t, new(HandlerProvisionTestSuite))
 }

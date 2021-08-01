@@ -93,7 +93,7 @@ func popOrNil(h *Handler, errChan chan error) (err error) {
 
 }
 
-func (h *Handler) fetchUpstream(req *http.Request, next caddyhttp.Handler) (*Entry, error) {
+func (h *Handler) fetchUpstream(req *http.Request, next caddyhttp.Handler, key string) (*Entry, error) {
 	// Create a new empty response
 	response := NewResponse()
 
@@ -131,7 +131,7 @@ func (h *Handler) fetchUpstream(req *http.Request, next caddyhttp.Handler) (*Ent
 	response.WaitHeaders()
 
 	// Create a new CacheEntry
-	return NewEntry(getKey(h.Config.CacheKeyTemplate, req), req, response, h.Config), popOrNil(h, errChan)
+	return NewEntry(key, req, response, h.Config), popOrNil(h, errChan)
 }
 
 // CaddyModule returns the Caddy module information
@@ -329,7 +329,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyht
 
 	}(h, start)
 
-	if !shouldUseCache(r) {
+	if !shouldUseCache(r, h.Config) {
 		h.addStatusHeaderIfConfigured(w, cacheBypass)
 		return next.ServeHTTP(w, r)
 	}
@@ -359,7 +359,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyht
 	if h.Distributed != nil {
 		// new an entry without fetching the upstream
 		response := NewResponse()
-		entry := NewEntry(getKey(h.Config.CacheKeyTemplate, r), r, response, h.Config)
+		entry := NewEntry(key, r, response, h.Config)
 		err := entry.setBackend(r.Context(), h.Config)
 		if err != nil {
 			return caddyhttp.Error(http.StatusInternalServerError, err)
@@ -393,7 +393,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyht
 	// It should be fetched from upstream and save it in cache
 
 	t := time.Now()
-	entry, err := h.fetchUpstream(r, next)
+	entry, err := h.fetchUpstream(r, next, key)
 	upstreamDuration = time.Since(t)
 
 	if entry.Response.Code >= 500 {

@@ -3,10 +3,12 @@ package httpcache
 import (
 	"bytes"
 	"context"
+	"crypto/sha1"
 	"encoding/json"
 	"fmt"
 	"hash/crc32"
 	"io"
+	"io/ioutil"
 	"math"
 	"net/http"
 	"net/url"
@@ -431,7 +433,36 @@ func (h *HTTPCache) getBucketIndexForKey(key string) uint32 {
 // In caddy2, it is automatically add the map by addHTTPVarsToReplacer
 func getKey(cacheKeyTemplate string, r *http.Request) string {
 	repl := r.Context().Value(caddy.ReplacerCtxKey).(*caddy.Replacer)
+
+	// Add contentlength and bodyhash when not added before
+	if _, ok := repl.Get("http.request.contentlength"); !ok {
+		repl.Set("http.request.contentlength", r.ContentLength)
+		repl.Map(func(key string) (interface{}, bool) {
+			if key == "http.request.bodyhash" {
+				return bodyHash(r), true
+			}
+			return nil, false
+		})
+	}
+
 	return repl.ReplaceKnown(cacheKeyTemplate, "")
+}
+
+// bodyHash calculates a hash value of the request body
+func bodyHash(r *http.Request) string {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return ""
+	}
+
+	h := sha1.New()
+	h.Write(body)
+	bs := h.Sum(nil)
+	result := fmt.Sprintf("%x", bs)
+
+	r.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+
+	return result
 }
 
 // Get returns the cached response
