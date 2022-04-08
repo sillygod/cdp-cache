@@ -240,7 +240,15 @@ func (h *Handler) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 					return d.Err(fmt.Sprintf("Invalid usage of %s, %s", keyCacheBucketsNum, err.Error()))
 				}
 				config.CacheBucketsNum = num
-
+			case keyCacheMaxMemorySize:
+				if len(args) != 1 {
+					return d.Err(fmt.Sprintf("Invalid usage of %s in cache config.", keyCacheMaxMemorySize))
+				}
+				num, err := strconv.Atoi(args[0])
+				if err != nil {
+					return d.Err(fmt.Sprintf("Invalid usage of %s, %s", keyCacheMaxMemorySize, err.Error()))
+				}
+				config.CacheMaxMemorySize = num
 			case keyDistributed:
 				if len(args) != 1 {
 					return d.Err(fmt.Sprintf("Invalid usage of %s in cache config.", keyDistributed))
