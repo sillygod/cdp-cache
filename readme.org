@@ -13,7 +13,10 @@
 
 * Caddy Http Cache
 
-  This is a http cache plugin for caddy 2. In fact, I am not so familiar with the part of cdn cache's mechanism so I reference the code from https://github.com/nicolasazrak/caddy-cache. which is the caddy v1's cache module. Then, I migrate the codebase to be consist with the caddy2 architecture and develop more features based on that.
+This is a http cache plugin for caddy 2.  The difference between this and cache-handler https://github.com/caddyserver/cache-handler is that this one is much easier to understand and configure.   But it does not support a =distrobuted ache=, and it needs to be compiled with golang 1.17 and caddy version v2.4.6 
+  
+  
+  In fact, I am not so familiar with the part of cdn cache's mechanism so I reference the code from https://github.com/nicolasazrak/caddy-cache. which is the caddy v1's cache module. Then, I migrate the codebase to be consist with the caddy2 architecture and develop more features based on that.
 
   Currently, this doesn't support =distributed cache= yet. It's still in plan.
 
