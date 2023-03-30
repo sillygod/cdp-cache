@@ -4,12 +4,11 @@ import (
 	"bytes"
 	"context"
 	"io"
-	"io/ioutil"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/go-redis/redis"
+	"github.com/redis/go-redis/v9"
 )
 
 var (
@@ -61,7 +60,9 @@ func InitRedisClient(addr, password string, db int) error {
 		DB:       db,
 	})
 
-	if _, err := client.Ping().Result(); err != nil {
+	ctx := context.Background()
+
+	if _, err := client.Ping(ctx).Result(); err != nil {
 		return err
 	}
 
@@ -94,23 +95,23 @@ func (r *RedisBackend) Length() int {
 
 // Close write the temp buffer's content to the groupcache
 func (r *RedisBackend) Close() error {
-	_, err := client.Set(r.Key, r.content.Bytes(), r.expiration.Sub(time.Now())).Result()
+	_, err := client.Set(r.Ctx, r.Key, r.content.Bytes(), r.expiration.Sub(time.Now())).Result()
 	return err
 }
 
 // Clean performs the purge storage
 func (r *RedisBackend) Clean() error {
-	_, err := client.Del(r.Key).Result()
+	_, err := client.Del(r.Ctx, r.Key).Result()
 	return err
 }
 
 // GetReader return a reader for the write public response
 func (r *RedisBackend) GetReader() (io.ReadCloser, error) {
-	content, err := client.Get(r.Key).Result()
+	content, err := client.Get(r.Ctx, r.Key).Result()
 	if err != nil {
 		return nil, err
 	}
 
-	rc := ioutil.NopCloser(strings.NewReader(content))
+	rc := io.NopCloser(strings.NewReader(content))
 	return rc, nil
 }

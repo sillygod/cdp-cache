@@ -50,13 +50,6 @@ func (b *BackendTestSuite) TestFlush() {
 	b.Nil(err)
 }
 
-func (b *BackendTestSuite) TestWrapResponseWriterToBackend() {
-	w := httptest.NewRecorder()
-	back := WrapResponseWriterToBackend(w)
-	_, ok := back.(Backend)
-	b.True(ok, "WrapResponseWriterToBackend should make the responseWriter to match the interface of Backend")
-}
-
 func TestBackendTestSuite(t *testing.T) {
 	suite.Run(t, new(BackendTestSuite))
 }

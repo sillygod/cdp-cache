@@ -4,9 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"sync"
 	"time"
@@ -149,10 +147,6 @@ func NewInMemoryBackend(ctx context.Context, key string, expiration time.Time) (
 	return i, nil
 }
 
-func (i *InMemoryBackend) composeKey(key string, expiration time.Time) string {
-	return fmt.Sprintf("%s:%d", key, expiration.Unix())
-}
-
 // Write adds the response content in the context for the groupcache's
 // setter function.
 func (i *InMemoryBackend) Write(p []byte) (n int, err error) {
@@ -209,6 +203,6 @@ func (i *InMemoryBackend) GetReader() (io.ReadCloser, error) {
 
 	}
 
-	rc := ioutil.NopCloser(bytes.NewReader(i.cachedBytes))
+	rc := io.NopCloser(bytes.NewReader(i.cachedBytes))
 	return rc, nil
 }

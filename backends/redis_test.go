@@ -3,7 +3,7 @@ package backends
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"testing"
 	"time"
@@ -63,7 +63,7 @@ func (suite *RedisBackendTestSuite) TestWriteCacheInRedis() {
 
 	reader, err := backend.GetReader()
 	suite.Nil(err)
-	result, err := ioutil.ReadAll(reader)
+	result, err := io.ReadAll(reader)
 	suite.Nil(err)
 	suite.Equal(content, result)
 }

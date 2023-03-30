@@ -52,7 +52,7 @@ func (b *Base) Close() error {
 
 // GetReader no reader for base backend
 func (b *Base) GetReader() (io.ReadCloser, error) {
-	return nil, errors.New("Private responses are not readable")
+	return nil, errors.New("private responses are not readable")
 }
 
 // WrapResponseWriterToBackend wrap the responseWriter to match the backend's interface
@@ -61,3 +61,7 @@ func WrapResponseWriterToBackend(w http.ResponseWriter) Backend {
 		w: w,
 	}
 }
+
+var (
+	_ Backend = (*Base)(nil)
+)
