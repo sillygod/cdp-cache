@@ -18,6 +18,7 @@ type StorageConsulTestSuite struct {
 	pool     *dockertest.Pool
 	resource *dockertest.Resource
 	sg       *Storage
+	sg2      *Storage
 }
 
 func (suite *StorageConsulTestSuite) initConsulSg(port string) error {
@@ -32,12 +33,22 @@ func (suite *StorageConsulTestSuite) initConsulSg(port string) error {
 		`, port)),
 	}
 	suite.sg = new(Storage)
+	suite.sg2 = new(Storage)
 
 	if err := suite.sg.UnmarshalCaddyfile(h.Dispenser); err != nil {
 		return err
 	}
 
 	if err := suite.sg.Provision(caddy.Context{}); err != nil {
+		return err
+	}
+
+	h.Dispenser.Reset()
+	if err := suite.sg2.UnmarshalCaddyfile(h.Dispenser); err != nil {
+		return err
+	}
+
+	if err := suite.sg2.Provision(caddy.Context{}); err != nil {
 		return err
 	}
 
@@ -144,8 +155,23 @@ func (suite *StorageConsulTestSuite) TestLockUnlock() {
 	ctx := context.Background()
 	err := suite.sg.Lock(ctx, "example.com/lock")
 	suite.Nil(err)
+
+	ch := make(chan struct{})
+
+	go func() {
+		err = suite.sg2.Lock(ctx, "example.com/lock")
+		suite.Nil(err)
+
+		err = suite.sg2.Unlock(ctx, "example.com/lock")
+		suite.Nil(err)
+		ch <- struct{}{}
+	}()
+
 	err = suite.sg.Unlock(ctx, "example.com/lock")
+
 	suite.Nil(err)
+	<-ch
+
 }
 
 func (suite *StorageConsulTestSuite) TestExist() {

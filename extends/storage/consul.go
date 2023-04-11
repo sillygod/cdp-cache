@@ -178,7 +178,7 @@ func (s *Storage) Stat(ctx context.Context, key string) (certmagic.KeyInfo, erro
 		return certmagic.KeyInfo{}, fmt.Errorf("key: %s does not exist", s.generateKey(key))
 	}
 
-	// what will happend if I don't give the modified time
+	// what will happened if I don't give the modified time
 	return certmagic.KeyInfo{
 		Key:        key,
 		Size:       int64(len(kv.Value)),
@@ -197,17 +197,12 @@ func (s *Storage) Lock(ctx context.Context, key string) error {
 		return fmt.Errorf("err: %s, could not create lock for key: %s", err.Error(), s.generateKey(key))
 	}
 
-	lockCh, err := lock.Lock(ctx.Done())
+	_, err = lock.Lock(ctx.Done())
 	if err != nil {
 		return fmt.Errorf("err: %s, unable to lock: %s", err.Error(), s.generateKey(key))
 	}
 
 	s.locks[key] = lock
-
-	go func() {
-		<-lockCh
-		s.Unlock(ctx, key)
-	}()
 
 	return nil
 }
