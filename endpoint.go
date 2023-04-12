@@ -36,12 +36,12 @@ type cachePurge struct{}
 // PurgePayload holds the field which will be unmarshalled from the request's body
 // NOTE: the format of URI can contains the query param.
 // ex. when the client send a delete request with the body
-// {
-//    "method": "GET",
-//    "hots": "example.com",
-//    "uri": "/static?ext=txt",
-// }
 //
+//	{
+//	   "method": "GET",
+//	   "hots": "example.com",
+//	   "uri": "/static?ext=txt",
+//	}
 type PurgePayload struct {
 	Method string `json:"method"`
 	Host   string `json:"host"`

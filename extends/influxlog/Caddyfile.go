@@ -25,12 +25,13 @@ func getDefaultConfig() *Config {
 }
 
 // UnmarshalCaddyfile deserializes Caddyfile tokens into influxlog config
-// influxlog {
-//   addr
-//   token
-// 	 organization
-//   bucket
-// }
+//
+//	influxlog {
+//	  addr
+//	  token
+//		 organization
+//	  bucket
+//	}
 func (s *Writer) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 	config := getDefaultConfig()
 

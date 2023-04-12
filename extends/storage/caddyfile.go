@@ -25,11 +25,12 @@ func getDefaultConfig() *Config {
 }
 
 // UnmarshalCaddyfile deserialize Caddyfile tokens into consul storage's config
-// storage consul {
-//    addr
-//    token
-//    key_prefix
-// }
+//
+//	storage consul {
+//	   addr
+//	   token
+//	   key_prefix
+//	}
 func (s *Storage) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 	config := getDefaultConfig()
 
