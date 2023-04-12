@@ -19,7 +19,7 @@ jobs:
       - name: set up go 1.x
         uses: actions/setup-go@v2
         with:
-          go-version: '1.16.4'
+          go-version: '1.20'
         id: go
 
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it

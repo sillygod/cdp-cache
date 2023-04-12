@@ -10,7 +10,7 @@ services:
       - "8500:8500"
 
   cdp: &cdp-source
-    image: golang:1.14.2
+    image: golang:1.20
     container_name: cdp
     volumes:
       - cdp:/go/
@@ -56,8 +56,7 @@ services:
       cd ${PROJECT_PATH} &&
       go run $PROJECT_PATH/cmd/main.go run --adapter caddyfile --config example/distributed_cache/sourceCaddyfile"
 
-    
+
 volumes:
   cdp:
   go-build-cache:
-

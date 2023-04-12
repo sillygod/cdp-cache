@@ -124,21 +124,21 @@ func parseCaddyfile(h httpcaddyfile.Helper) (caddyhttp.MiddlewareHandler, error)
 
 // UnmarshalCaddyfile sets up the handler from Caddyfile
 //
-// :4000 {
-//     reverse_proxy yourserver:5000
-//     http_cache {
-//         match_path /assets
-//         match_header Content-Type image/jpg image/png
-//         status_header X-Cache-Status
-//         default_max_age 15m
-//         path /tmp/caddy-cache
+//	:4000 {
+//	    reverse_proxy yourserver:5000
+//	    http_cache {
+//	        match_path /assets
+//	        match_header Content-Type image/jpg image/png
+//	        status_header X-Cache-Status
+//	        default_max_age 15m
+//	        path /tmp/caddy-cache
 //
-//         distributed consul {
-//             service_name
-//             addr
-//         }
-//     }
-// }
+//	        distributed consul {
+//	            service_name
+//	            addr
+//	        }
+//	    }
+//	}
 func (h *Handler) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 	config := getDefaultConfig()
 

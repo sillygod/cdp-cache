@@ -2,7 +2,7 @@ package backends
 
 import (
 	"context"
-	"io/ioutil"
+	"io"
 	"testing"
 	"time"
 
@@ -40,7 +40,7 @@ func (suite *MemoryBackendTestSuite) TestWriteInCache() {
 	// test the content get from the reader will be consistent with the original one
 	reader, err := backend.GetReader()
 	suite.Nil(err)
-	result, err := ioutil.ReadAll(reader)
+	result, err := io.ReadAll(reader)
 	suite.Nil(err)
 	suite.Equal(result, content)
 }
@@ -64,7 +64,7 @@ func (suite *MemoryBackendTestSuite) TestReadExistingCacheInGroupCache() {
 	reader, err := anotherBackend.GetReader()
 	suite.Assert().NoError(err)
 
-	result, err := ioutil.ReadAll(reader)
+	result, err := io.ReadAll(reader)
 	suite.Assert().NoError(err)
 	suite.Equal(result, content)
 

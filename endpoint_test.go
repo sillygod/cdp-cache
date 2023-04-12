@@ -3,7 +3,7 @@ package httpcache
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -47,7 +47,10 @@ func (suite *CacheEndpointTestSuite) assertKeyIn(key string, keys []string, msgA
 func (suite *CacheEndpointTestSuite) SetupSuite() {
 	suite.caddyTester = caddytest.NewTester(suite.T())
 	suite.url = "http://localhost:9898/hello"
-	suite.admin_url = "http://localhost:2019"
+	caddytest.Default.AdminPort = 2019
+	// HACK: I don't know why caddytest will re-spwan a server which admin's port is 2019 different from the origin port in the caddytest
+	// This way, the test can run smoothly.
+	suite.admin_url = fmt.Sprintf("http://localhost:%d", caddytest.Default.AdminPort)
 	suite.caddyTester.InitServer(`
 	{
 		order http_cache before reverse_proxy
@@ -76,17 +79,17 @@ func (suite *CacheEndpointTestSuite) TestListCacheKeys() {
 	r, err := http.NewRequest("GET", suite.url, nil)
 	suite.Assert().NoError(err)
 
-	res, err := suite.caddyTester.Client.Do(r)
+	_, err = suite.caddyTester.Client.Do(r)
 	suite.Assert().NoError(err)
 	// create the cache first
 
 	r, err = http.NewRequest("GET", suite.admin_url+"/caches", nil)
 	suite.Assert().NoError(err)
 
-	res, err = suite.caddyTester.Client.Do(r)
+	res, err := suite.caddyTester.Client.Do(r)
 	suite.Assert().NoError(err)
 
-	result, err := ioutil.ReadAll(res.Body)
+	result, err := io.ReadAll(res.Body)
 	res.Body.Close()
 	suite.Assert().NoError(err)
 	suite.True(strings.Contains(string(result), "GET localhost/hello?"))
@@ -115,7 +118,7 @@ func (suite *CacheEndpointTestSuite) TestShowCache() {
 	res, err := suite.caddyTester.Client.Do(r)
 	suite.Assert().NoError(err)
 
-	result, err := ioutil.ReadAll(res.Body)
+	result, err := io.ReadAll(res.Body)
 	res.Body.Close()
 	suite.Assert().NoError(err)
 	suite.True(strings.Contains(string(result), "hope anything will be good"), fmt.Sprintf("result: %s", string(result)))

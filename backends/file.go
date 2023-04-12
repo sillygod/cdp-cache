@@ -2,7 +2,6 @@ package backends
 
 import (
 	"io"
-	"io/ioutil"
 	"os"
 	"sync"
 )
@@ -20,7 +19,7 @@ func NewFileBackend(path string) (Backend, error) {
 		return nil, err
 	}
 
-	file, err := ioutil.TempFile(path, "caddy-cache-")
+	file, err := os.CreateTemp(path, "caddy-cache-")
 	if err != nil {
 		return nil, err
 	}

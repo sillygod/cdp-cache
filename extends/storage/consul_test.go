@@ -18,6 +18,7 @@ type StorageConsulTestSuite struct {
 	pool     *dockertest.Pool
 	resource *dockertest.Resource
 	sg       *Storage
+	sg2      *Storage
 }
 
 func (suite *StorageConsulTestSuite) initConsulSg(port string) error {
@@ -32,12 +33,22 @@ func (suite *StorageConsulTestSuite) initConsulSg(port string) error {
 		`, port)),
 	}
 	suite.sg = new(Storage)
+	suite.sg2 = new(Storage)
 
 	if err := suite.sg.UnmarshalCaddyfile(h.Dispenser); err != nil {
 		return err
 	}
 
 	if err := suite.sg.Provision(caddy.Context{}); err != nil {
+		return err
+	}
+
+	h.Dispenser.Reset()
+	if err := suite.sg2.UnmarshalCaddyfile(h.Dispenser); err != nil {
+		return err
+	}
+
+	if err := suite.sg2.Provision(caddy.Context{}); err != nil {
 		return err
 	}
 
@@ -75,13 +86,14 @@ func (suite *StorageConsulTestSuite) TearDownSuite() {
 func (suite *StorageConsulTestSuite) TestStore() {
 
 	testData := []string{"hi", "hi/people"}
+	ctx := context.Background()
 
 	for _, data := range testData {
-		err := suite.sg.Store(data, []byte(`OOOK`))
+		err := suite.sg.Store(ctx, data, []byte(`OOOK`))
 		suite.Nil(err)
 	}
 
-	res, err := suite.sg.List("hi", true)
+	res, err := suite.sg.List(ctx, "hi", true)
 	suite.Nil(err)
 
 	expectedRes := []string{}
@@ -95,42 +107,46 @@ func (suite *StorageConsulTestSuite) TestStore() {
 }
 
 func (suite *StorageConsulTestSuite) TestLoad() {
-	err := suite.sg.Store("hi", []byte(`OOOK`))
+	ctx := context.Background()
+	err := suite.sg.Store(ctx, "hi", []byte(`OOOK`))
 	suite.Nil(err)
-	value, err := suite.sg.Load("hi")
+	value, err := suite.sg.Load(ctx, "hi")
 	suite.Nil(err)
 
 	suite.Equal([]byte(`OOOK`), value)
 }
 
 func (suite *StorageConsulTestSuite) TestDelete() {
-	err := suite.sg.Store("hi", []byte(`OOOK`))
+	ctx := context.Background()
+	err := suite.sg.Store(ctx, "hi", []byte(`OOOK`))
 	suite.Nil(err)
-	err = suite.sg.Delete("hi")
+	err = suite.sg.Delete(ctx, "hi")
 	suite.Nil(err)
-	exists := suite.sg.Exists("hi")
+	exists := suite.sg.Exists(ctx, "hi")
 	suite.False(exists)
 }
 
 func (suite *StorageConsulTestSuite) TestStat() {
-	err := suite.sg.Store("hi", []byte(`OOOK`))
+	ctx := context.Background()
+	err := suite.sg.Store(ctx, "hi", []byte(`OOOK`))
 	suite.Nil(err)
-	info, err := suite.sg.Stat("hi")
+	info, err := suite.sg.Stat(ctx, "hi")
 	suite.Nil(err)
 	suite.Equal("hi", info.Key)
 }
 
 func (suite *StorageConsulTestSuite) TestList() {
-	err := suite.sg.Store("example.com", []byte(`OOOK`))
+	ctx := context.Background()
+	err := suite.sg.Store(ctx, "example.com", []byte(`OOOK`))
 	suite.Nil(err)
 
-	err = suite.sg.Store("example.com/xx.crt", []byte(`OOOK`))
+	err = suite.sg.Store(ctx, "example.com/xx.crt", []byte(`OOOK`))
 	suite.Nil(err)
 
-	err = suite.sg.Store("example.com/xx.csr", []byte(`OOOK`))
+	err = suite.sg.Store(ctx, "example.com/xx.csr", []byte(`OOOK`))
 	suite.Nil(err)
 
-	keys, err := suite.sg.List("example.com", true)
+	keys, err := suite.sg.List(ctx, "example.com", true)
 	suite.Nil(err)
 	suite.Len(keys, 3)
 }
@@ -139,14 +155,30 @@ func (suite *StorageConsulTestSuite) TestLockUnlock() {
 	ctx := context.Background()
 	err := suite.sg.Lock(ctx, "example.com/lock")
 	suite.Nil(err)
-	err = suite.sg.Unlock("example.com/lock")
+
+	ch := make(chan struct{})
+
+	go func() {
+		err = suite.sg2.Lock(ctx, "example.com/lock")
+		suite.Nil(err)
+
+		err = suite.sg2.Unlock(ctx, "example.com/lock")
+		suite.Nil(err)
+		ch <- struct{}{}
+	}()
+
+	err = suite.sg.Unlock(ctx, "example.com/lock")
+
 	suite.Nil(err)
+	<-ch
+
 }
 
 func (suite *StorageConsulTestSuite) TestExist() {
-	err := suite.sg.Store("hi", []byte(`OOOK`))
+	ctx := context.Background()
+	err := suite.sg.Store(ctx, "hi", []byte(`OOOK`))
 	suite.Nil(err)
-	exists := suite.sg.Exists("hi")
+	exists := suite.sg.Exists(ctx, "hi")
 	suite.True(exists)
 }
 

@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"hash/crc32"
 	"io"
-	"io/ioutil"
 	"math"
 	"net/http"
 	"net/url"
@@ -450,7 +449,7 @@ func getKey(cacheKeyTemplate string, r *http.Request) string {
 
 // bodyHash calculates a hash value of the request body
 func bodyHash(r *http.Request) string {
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		return ""
 	}
@@ -460,7 +459,7 @@ func bodyHash(r *http.Request) string {
 	bs := h.Sum(nil)
 	result := fmt.Sprintf("%x", bs)
 
-	r.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+	r.Body = io.NopCloser(bytes.NewBuffer(body))
 
 	return result
 }

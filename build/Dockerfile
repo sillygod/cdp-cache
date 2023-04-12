@@ -1,4 +1,4 @@
-FROM golang:1.14.2 as builder
+FROM golang:1.20 as builder
 WORKDIR /app
 COPY . /app
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o caddy cmd/main.go

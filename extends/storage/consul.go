@@ -79,7 +79,7 @@ func (s *Storage) generateKey(key string) string {
 }
 
 // Store stores the key into consul's kv store
-func (s *Storage) Store(key string, value []byte) error {
+func (s *Storage) Store(ctx context.Context, key string, value []byte) error {
 	kv := &api.KVPair{Key: s.generateKey(key), Value: value}
 
 	if _, err := s.KV.Put(kv, nil); err != nil {
@@ -90,14 +90,14 @@ func (s *Storage) Store(key string, value []byte) error {
 }
 
 // Load retrieves the value at key.
-func (s *Storage) Load(key string) ([]byte, error) {
+func (s *Storage) Load(ctx context.Context, key string) ([]byte, error) {
 	kv, _, err := s.KV.Get(s.generateKey(key), &api.QueryOptions{RequireConsistent: true})
 	if err != nil {
 		return nil, fmt.Errorf("unable to get data: %s, key: %s", err.Error(), s.generateKey(key))
 	}
 
 	if kv == nil {
-		return nil, certmagic.ErrNotExist(fmt.Errorf("key: %s does not exist", s.generateKey(key)))
+		return nil, fmt.Errorf("key: %s does not exist", s.generateKey(key))
 	}
 
 	return kv.Value, nil
@@ -106,7 +106,7 @@ func (s *Storage) Load(key string) ([]byte, error) {
 // Delete deletes key. An error should be
 // returned only if the key still exists
 // when the method returns.
-func (s *Storage) Delete(key string) error {
+func (s *Storage) Delete(ctx context.Context, key string) error {
 	kv, _, err := s.KV.Get(s.generateKey(key), &api.QueryOptions{RequireConsistent: true})
 	if err != nil {
 		return fmt.Errorf("unable to get data: %s, key: %s", err.Error(), s.generateKey(key))
@@ -126,7 +126,7 @@ func (s *Storage) Delete(key string) error {
 
 // Exists returns true if the key exists
 // and there was no error checking.
-func (s *Storage) Exists(key string) bool {
+func (s *Storage) Exists(ctx context.Context, key string) bool {
 	kv, _, err := s.KV.Get(s.generateKey(key), &api.QueryOptions{RequireConsistent: true})
 	return kv != nil && err == nil
 }
@@ -136,7 +136,7 @@ func (s *Storage) Exists(key string) bool {
 // will be enumerated (i.e. "directories"
 // should be walked); otherwise, only keys
 // prefixed exactly by prefix will be listed.
-func (s *Storage) List(prefix string, recursive bool) ([]string, error) {
+func (s *Storage) List(ctx context.Context, prefix string, recursive bool) ([]string, error) {
 	resultKeys := []string{}
 
 	keys, _, err := s.KV.Keys(s.generateKey(prefix), "", &api.QueryOptions{RequireConsistent: true})
@@ -145,7 +145,7 @@ func (s *Storage) List(prefix string, recursive bool) ([]string, error) {
 	}
 
 	if len(keys) == 0 {
-		return resultKeys, certmagic.ErrNotExist(fmt.Errorf("no key at %s", prefix))
+		return resultKeys, fmt.Errorf("no key at %s", prefix)
 	}
 
 	if recursive {
@@ -168,17 +168,17 @@ func (s *Storage) List(prefix string, recursive bool) ([]string, error) {
 }
 
 // Stat returns information about key.
-func (s *Storage) Stat(key string) (certmagic.KeyInfo, error) {
+func (s *Storage) Stat(ctx context.Context, key string) (certmagic.KeyInfo, error) {
 	kv, _, err := s.KV.Get(s.generateKey(key), &api.QueryOptions{RequireConsistent: true})
 	if err != nil {
 		return certmagic.KeyInfo{}, fmt.Errorf("unable to get data: %s, key: %s", err.Error(), s.generateKey(key))
 	}
 
 	if kv == nil {
-		return certmagic.KeyInfo{}, certmagic.ErrNotExist(fmt.Errorf("key: %s does not exist", s.generateKey(key)))
+		return certmagic.KeyInfo{}, fmt.Errorf("key: %s does not exist", s.generateKey(key))
 	}
 
-	// what will happend if I don't give the modified time
+	// what will happened if I don't give the modified time
 	return certmagic.KeyInfo{
 		Key:        key,
 		Size:       int64(len(kv.Value)),
@@ -197,23 +197,18 @@ func (s *Storage) Lock(ctx context.Context, key string) error {
 		return fmt.Errorf("err: %s, could not create lock for key: %s", err.Error(), s.generateKey(key))
 	}
 
-	lockCh, err := lock.Lock(ctx.Done())
+	_, err = lock.Lock(ctx.Done())
 	if err != nil {
 		return fmt.Errorf("err: %s, unable to lock: %s", err.Error(), s.generateKey(key))
 	}
 
 	s.locks[key] = lock
 
-	go func() {
-		<-lockCh
-		s.Unlock(key)
-	}()
-
 	return nil
 }
 
 // Unlock unlocks key
-func (s *Storage) Unlock(key string) error {
+func (s *Storage) Unlock(ctx context.Context, key string) error {
 	lock, exists := s.locks[key]
 	if !exists {
 		return fmt.Errorf("lock key: %s not found", s.generateKey(key))
