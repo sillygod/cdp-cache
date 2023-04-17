@@ -3,6 +3,7 @@ package mystorage
 import (
 	"context"
 	"fmt"
+	"io/fs"
 	"path"
 	"strings"
 
@@ -97,7 +98,7 @@ func (s *Storage) Load(ctx context.Context, key string) ([]byte, error) {
 	}
 
 	if kv == nil {
-		return nil, fmt.Errorf("key: %s does not exist", s.generateKey(key))
+		return nil, fs.ErrNotExist
 	}
 
 	return kv.Value, nil
@@ -110,6 +111,10 @@ func (s *Storage) Delete(ctx context.Context, key string) error {
 	kv, _, err := s.KV.Get(s.generateKey(key), &api.QueryOptions{RequireConsistent: true})
 	if err != nil {
 		return fmt.Errorf("unable to get data: %s, key: %s", err.Error(), s.generateKey(key))
+	}
+
+	if kv == nil {
+		return fs.ErrNotExist
 	}
 
 	success, _, err := s.KV.DeleteCAS(kv, nil)
@@ -145,7 +150,7 @@ func (s *Storage) List(ctx context.Context, prefix string, recursive bool) ([]st
 	}
 
 	if len(keys) == 0 {
-		return resultKeys, fmt.Errorf("no key at %s", prefix)
+		return resultKeys, fs.ErrNotExist
 	}
 
 	if recursive {
@@ -175,7 +180,7 @@ func (s *Storage) Stat(ctx context.Context, key string) (certmagic.KeyInfo, erro
 	}
 
 	if kv == nil {
-		return certmagic.KeyInfo{}, fmt.Errorf("key: %s does not exist", s.generateKey(key))
+		return certmagic.KeyInfo{}, fs.ErrNotExist
 	}
 
 	// what will happened if I don't give the modified time
