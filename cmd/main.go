@@ -32,6 +32,7 @@ import (
 	_ "github.com/caddyserver/caddy/v2/modules/standard"
 	_ "github.com/sillygod/cdp-cache"
 	_ "github.com/sillygod/cdp-cache/extends/influxlog"
+	_ "github.com/sillygod/cdp-cache/extends/proxyprotocol"
 	_ "github.com/sillygod/cdp-cache/extends/storage"
 )
 

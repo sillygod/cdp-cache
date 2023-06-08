@@ -197,9 +197,9 @@ This is a http cache plugin for caddy 2.  The difference between this and cache-
 
 * Todo list
 
-  - [ ] upgrade to the latest caddy
   - [ ] https://github.com/mastercactapus/caddy2-proxyprotocol
     https://caddyserver.com/docs/caddyfile/options#listener-wrappers
+    https://github.com/mholt/caddy-l4
     https://github.com/pires/go-proxyproto
     (add proxy protocol support)
   - [ ] distributed cache (in progress)

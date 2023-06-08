@@ -12,7 +12,7 @@ const (
 
 // Config is the configuration for consul storage
 type Config struct {
-	Addr      string `json:"addr.omitempty"`
+	Addr      string `json:"addr,omitempty"`
 	Token     string `json:"token,omitempty"`
 	KeyPrefix string `json:"key_prefix,omitempty"`
 }

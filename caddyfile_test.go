@@ -55,7 +55,7 @@ func (suite *CaddyfileTestSuite) TestInvalidCacheStatusHeader() {
 	h := httpcaddyfile.Helper{
 		Dispenser: caddyfile.NewTestDispenser(`
 		http_cache {
-			status_header X-Cache-Status A-Status	
+			status_header X-Cache-Status A-Status
 		}`),
 	}
 	_, err := parseCaddyfile(h)
