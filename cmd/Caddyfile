@@ -4,6 +4,13 @@
     order http_cache before reverse_proxy
     admin 0.0.0.0:7777
 
+    servers {
+        listener_wrappers {
+            proxy_protocol {
+                timeout 5s
+            }
+        }
+    }
 }
 
 :9991  {
